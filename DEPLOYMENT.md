@@ -108,7 +108,7 @@ vercel --prod
    Click "Environment" and add:
    ```
    NODE_ENV=production
-   JWT_SECRET=your-super-secret-random-string-here
+   JWT_SECRET=87dc7b0ab81348df939799f0a4032bd0
    FRONTEND_URL=https://your-app.vercel.app
    PORT=10000
    ```
