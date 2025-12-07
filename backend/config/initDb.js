@@ -1,14 +1,8 @@
 import { neon } from '@neondatabase/serverless';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 
 dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const sql = neon(process.env.DATABASE_URL);
 
@@ -16,30 +10,97 @@ async function initializeDatabase() {
   try {
     console.log('🔄 Initializing database...');
 
-    // Read and execute schema
-    const schemaSQL = readFileSync(join(__dirname, 'schema.sql'), 'utf-8');
-    
-    // Split by semicolon and execute each statement
-    const statements = schemaSQL
-      .split(';')
-      .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'));
+    // Create Users Table
+    await sql`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        phone VARCHAR(20),
+        branch VARCHAR(100),
+        college VARCHAR(255),
+        role VARCHAR(20) DEFAULT 'requester' CHECK (role IN ('requester', 'admin')),
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    console.log('✅ Users table created');
 
-    for (const statement of statements) {
-      try {
-        await sql(statement);
-      } catch (error) {
-        // Ignore errors for statements that might already exist
-        if (!error.message.includes('already exists')) {
-          console.error('Error executing statement:', error.message);
-        }
-      }
-    }
+    // Create Projects Table
+    await sql`
+      CREATE TABLE IF NOT EXISTS projects (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT NOT NULL,
+        category VARCHAR(100) NOT NULL,
+        project_type VARCHAR(20) NOT NULL CHECK (project_type IN ('mini', 'major')),
+        budget DECIMAL(10, 2),
+        deadline DATE NOT NULL,
+        technologies TEXT[],
+        phone VARCHAR(20),
+        status VARCHAR(50) DEFAULT 'open' CHECK (status IN ('open', 'in-review', 'accepted', 'in-progress', 'delivered', 'completed', 'rejected')),
+        requester_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        assigned_developer_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        estimated_delivery DATE,
+        accepted_at TIMESTAMP,
+        completed_at TIMESTAMP,
+        admin_notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    console.log('✅ Projects table created');
+
+    // Create Progress Updates Table
+    await sql`
+      CREATE TABLE IF NOT EXISTS progress_updates (
+        id SERIAL PRIMARY KEY,
+        project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+        message TEXT NOT NULL,
+        percentage INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    console.log('✅ Progress updates table created');
+
+    // Create Notifications Table
+    await sql`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        message TEXT NOT NULL,
+        type VARCHAR(50) DEFAULT 'info',
+        related_project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL,
+        is_read BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    console.log('✅ Notifications table created');
+
+    // Create Settings Table
+    await sql`
+      CREATE TABLE IF NOT EXISTS settings (
+        id SERIAL PRIMARY KEY,
+        key VARCHAR(100) UNIQUE NOT NULL,
+        value JSONB NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    console.log('✅ Settings table created');
+
+    // Create Indexes
+    await sql`CREATE INDEX IF NOT EXISTS idx_projects_requester ON projects(requester_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_projects_created ON projects(created_at DESC)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id)`;
+    console.log('✅ Indexes created');
 
     // Hash passwords
     const hashedPassword = await bcrypt.hash('password123', 10);
 
-    // Insert default users with hashed passwords
+    // Insert default users
     await sql`
       INSERT INTO users (email, password, name, phone, branch, college, role, is_active)
       VALUES 
@@ -47,11 +108,22 @@ async function initializeDatabase() {
         ('student@test.com', ${hashedPassword}, 'Test Student', '+1234567890', 'Computer Science', 'Test University', 'requester', true)
       ON CONFLICT (email) DO NOTHING
     `;
+    console.log('✅ Default users created');
 
-    console.log('✅ Database initialized successfully!');
-    console.log('📝 Default accounts created:');
-    console.log('   Admin: admin@test.com / password123');
-    console.log('   Student: student@test.com / password123');
+    // Insert default settings
+    await sql`
+      INSERT INTO settings (key, value) VALUES
+      ('faqs', '[{"question": "How long does it take?", "answer": "Depends on project complexity"}, {"question": "What payment methods?", "answer": "UPI, Card, Net Banking"}]'::jsonb),
+      ('contact', '{"email": "support@projecthub.com", "phone": "+1234567890", "address": "123 Main St, City"}'::jsonb),
+      ('pricing', '{"mini": 5000, "major": 15000}'::jsonb)
+      ON CONFLICT (key) DO NOTHING
+    `;
+    console.log('✅ Default settings created');
+
+    console.log('\n✅ Database initialized successfully!');
+    console.log('📝 Default accounts:');
+    console.log('   👨‍💼 Admin: admin@test.com / password123');
+    console.log('   👨‍🎓 Student: student@test.com / password123');
     
     process.exit(0);
   } catch (error) {
