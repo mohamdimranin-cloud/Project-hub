@@ -12,7 +12,21 @@ function CreateProject() {
     technologies: '',
     deadline: '',
     budget: '',
-    uploads: []
+    uploads: [],
+    // Prototype specific fields
+    problemStatement: '',
+    targetPlatform: '',
+    prototypeType: '',
+    preferredTools: '',
+    numberOfScreens: '',
+    referenceDesigns: '',
+    // Documentation specific fields
+    documentType: '',
+    collegeFormat: '',
+    numberOfPages: '',
+    plagiarismLimit: '',
+    referenceFile: '',
+    specialInstructions: ''
   });
 
   const projectTypes = [
@@ -47,7 +61,7 @@ function CreateProject() {
   ];
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const categories = ['Web App', 'Mobile App', 'ML', 'AI'];
+  const categories = ['Web App', 'Mobile App', 'ML', 'AI', 'Other'];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -145,50 +159,235 @@ function CreateProject() {
             />
           </div>
 
-          {/* Category */}
-          <div className="form-group">
-            <label>🏷️ Category *</label>
-            <select 
-              value={formData.category}
-              onChange={(e) => setFormData({...formData, category: e.target.value})}
-              required
-            >
-              <option value="">Select a category</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Description */}
-          <div className="form-group">
-            <label>📄 Full Description *</label>
-            <textarea 
-              rows="8"
-              value={formData.description}
-              onChange={(e) => setFormData({...formData, description: e.target.value})}
-              placeholder="Describe your project requirements in detail...&#10;&#10;Include:&#10;• What you want to build&#10;• Key features needed&#10;• Any specific requirements&#10;• Expected deliverables"
-              required
-              style={{ lineHeight: '1.6' }}
-            />
-            <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem' }}>
-              {formData.description.length} characters
+          {/* Category - Only for Mini and Major projects */}
+          {(formData.projectType === 'mini' || formData.projectType === 'major') && (
+            <div className="form-group">
+              <label>🏷️ Category *</label>
+              <select 
+                value={formData.category}
+                onChange={(e) => setFormData({...formData, category: e.target.value})}
+                required
+              >
+                <option value="">Select a category</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
             </div>
-          </div>
+          )}
 
-          {/* Technologies */}
-          <div className="form-group">
-            <label>💻 Preferred Technologies (optional)</label>
-            <input 
-              type="text" 
-              value={formData.technologies}
-              onChange={(e) => setFormData({...formData, technologies: e.target.value})}
-              placeholder="e.g., React, Node.js, MongoDB, Python, TensorFlow"
-            />
-            <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem' }}>
-              Separate multiple technologies with commas
+          {/* PROTOTYPE SPECIFIC FIELDS */}
+          {formData.projectType === 'prototype' && (
+            <>
+              <div className="form-group">
+                <label>💡 Problem Statement / Idea *</label>
+                <textarea 
+                  rows="4"
+                  value={formData.problemStatement}
+                  onChange={(e) => setFormData({...formData, problemStatement: e.target.value})}
+                  placeholder="Describe the problem you're solving or the idea you want to validate..."
+                  required
+                  style={{ lineHeight: '1.6' }}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>📱 Target Platform *</label>
+                <select 
+                  value={formData.targetPlatform}
+                  onChange={(e) => setFormData({...formData, targetPlatform: e.target.value})}
+                  required
+                >
+                  <option value="">Select platform</option>
+                  <option value="Web">Web</option>
+                  <option value="Mobile App">Mobile App</option>
+                  <option value="Desktop">Desktop</option>
+                  <option value="Cross-Platform">Cross-Platform</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>🎨 Prototype Type *</label>
+                <select 
+                  value={formData.prototypeType}
+                  onChange={(e) => setFormData({...formData, prototypeType: e.target.value})}
+                  required
+                >
+                  <option value="">Select type</option>
+                  <option value="UI Only">UI Only (Clickable Demo)</option>
+                  <option value="Functional Demo">Functional Demo (With Basic Logic)</option>
+                  <option value="Wireframes">Wireframes & Mockups</option>
+                  <option value="Full Interactive">Full Interactive Prototype</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>🛠️ Preferred Tools *</label>
+                <input 
+                  type="text" 
+                  value={formData.preferredTools}
+                  onChange={(e) => setFormData({...formData, preferredTools: e.target.value})}
+                  placeholder="e.g., Figma, React, Flutter, Adobe XD"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>📊 Number of Screens / Pages *</label>
+                <input 
+                  type="number" 
+                  value={formData.numberOfScreens}
+                  onChange={(e) => setFormData({...formData, numberOfScreens: e.target.value})}
+                  placeholder="e.g., 10"
+                  min="1"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>🖼️ Reference Designs (Optional)</label>
+                <textarea 
+                  rows="3"
+                  value={formData.referenceDesigns}
+                  onChange={(e) => setFormData({...formData, referenceDesigns: e.target.value})}
+                  placeholder="Paste links to Figma, Dribbble, or describe design inspiration..."
+                  style={{ lineHeight: '1.6' }}
+                />
+              </div>
+            </>
+          )}
+
+          {/* DOCUMENTATION SPECIFIC FIELDS */}
+          {formData.projectType === 'design' && (
+            <>
+              <div className="form-group">
+                <label>📝 Document Type *</label>
+                <select 
+                  value={formData.documentType}
+                  onChange={(e) => setFormData({...formData, documentType: e.target.value})}
+                  required
+                >
+                  <option value="">Select document type</option>
+                  <option value="Project Report">Project Report (Chapters 1-6)</option>
+                  <option value="IEEE Documentation">IEEE Format Documentation</option>
+                  <option value="PPT Presentation">PPT for Presentation</option>
+                  <option value="Abstract & Synopsis">Abstract & Synopsis</option>
+                  <option value="SRS">SRS (Software Requirement Specification)</option>
+                  <option value="Test Cases">Test Cases</option>
+                  <option value="User Manual">User Manual</option>
+                  <option value="Research Paper">Research Paper Format</option>
+                  <option value="Internship Report">Internship Report</option>
+                  <option value="Complete Package">Complete Package (Report + PPT + Abstract)</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>🎓 College / University Format *</label>
+                <input 
+                  type="text" 
+                  value={formData.collegeFormat}
+                  onChange={(e) => setFormData({...formData, collegeFormat: e.target.value})}
+                  placeholder="e.g., Anna University, VTU, JNTU, IEEE"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>💻 Technology Used (Optional)</label>
+                <input 
+                  type="text" 
+                  value={formData.technologies}
+                  onChange={(e) => setFormData({...formData, technologies: e.target.value})}
+                  placeholder="e.g., Python, Machine Learning, React"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>📄 Number of Pages Required (Optional)</label>
+                <input 
+                  type="number" 
+                  value={formData.numberOfPages}
+                  onChange={(e) => setFormData({...formData, numberOfPages: e.target.value})}
+                  placeholder="e.g., 50"
+                  min="1"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>🔍 Plagiarism Limit (%) *</label>
+                <select 
+                  value={formData.plagiarismLimit}
+                  onChange={(e) => setFormData({...formData, plagiarismLimit: e.target.value})}
+                  required
+                >
+                  <option value="">Select plagiarism limit</option>
+                  <option value="0-5%">0-5% (Premium Quality)</option>
+                  <option value="5-10%">5-10% (High Quality)</option>
+                  <option value="10-15%">10-15% (Standard)</option>
+                  <option value="15-20%">15-20% (Basic)</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>📎 Reference File / Sample Format (Optional)</label>
+                <textarea 
+                  rows="2"
+                  value={formData.referenceFile}
+                  onChange={(e) => setFormData({...formData, referenceFile: e.target.value})}
+                  placeholder="Paste Google Drive link or describe the format you need..."
+                  style={{ lineHeight: '1.6' }}
+                />
+              </div>
+            </>
+          )}
+
+          {/* Description - For Mini and Major projects */}
+          {(formData.projectType === 'mini' || formData.projectType === 'major') && (
+            <>
+              <div className="form-group">
+                <label>📄 Full Description *</label>
+                <textarea 
+                  rows="8"
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  placeholder="Describe your project requirements in detail...&#10;&#10;Include:&#10;• What you want to build&#10;• Key features needed&#10;• Any specific requirements&#10;• Expected deliverables"
+                  required
+                  style={{ lineHeight: '1.6' }}
+                />
+                <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem' }}>
+                  {formData.description.length} characters
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>💻 Preferred Technologies (optional)</label>
+                <input 
+                  type="text" 
+                  value={formData.technologies}
+                  onChange={(e) => setFormData({...formData, technologies: e.target.value})}
+                  placeholder="e.g., React, Node.js, MongoDB, Python, TensorFlow"
+                />
+                <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem' }}>
+                  Separate multiple technologies with commas
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Special Instructions - For Prototype and Documentation */}
+          {(formData.projectType === 'prototype' || formData.projectType === 'design') && (
+            <div className="form-group">
+              <label>📋 Special Instructions *</label>
+              <textarea 
+                rows="5"
+                value={formData.specialInstructions}
+                onChange={(e) => setFormData({...formData, specialInstructions: e.target.value})}
+                placeholder="Any additional requirements, preferences, or important details we should know..."
+                required
+                style={{ lineHeight: '1.6' }}
+              />
             </div>
-          </div>
+          )}
 
           {/* Budget and Deadline Row */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>

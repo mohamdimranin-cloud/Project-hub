@@ -27,6 +27,20 @@ CREATE TABLE IF NOT EXISTS projects (
     technologies TEXT[], -- Array of technologies
     phone VARCHAR(20),
     status VARCHAR(50) DEFAULT 'open' CHECK (status IN ('open', 'in-review', 'accepted', 'in-progress', 'delivered', 'completed', 'rejected')),
+    -- Prototype specific fields
+    problem_statement TEXT,
+    target_platform VARCHAR(100),
+    prototype_type VARCHAR(100),
+    preferred_tools VARCHAR(255),
+    number_of_screens INTEGER,
+    reference_designs TEXT,
+    -- Documentation specific fields
+    document_type VARCHAR(100),
+    college_format VARCHAR(255),
+    number_of_pages INTEGER,
+    plagiarism_limit VARCHAR(50),
+    reference_file TEXT,
+    special_instructions TEXT,
     requester_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     assigned_developer_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     estimated_delivery DATE,

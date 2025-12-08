@@ -181,7 +181,13 @@ router.get('/:id', authenticate, async (req, res) => {
 // Create project
 router.post('/', authenticate, authorize('requester', 'admin'), async (req, res) => {
   try {
-    const { title, description, category, projectType, budget, deadline, technologies, phone } = req.body;
+    const { 
+      title, description, category, projectType, budget, deadline, technologies, phone,
+      // Prototype fields
+      problemStatement, targetPlatform, prototypeType, preferredTools, numberOfScreens, referenceDesigns,
+      // Documentation fields
+      documentType, collegeFormat, numberOfPages, plagiarismLimit, referenceFile, specialInstructions
+    } = req.body;
     
     // Convert technologies array to PostgreSQL array format
     const techArray = technologies && technologies.length > 0 
@@ -191,11 +197,17 @@ router.post('/', authenticate, authorize('requester', 'admin'), async (req, res)
     const newProject = await sql`
       INSERT INTO projects (
         title, description, category, project_type, budget, deadline, 
-        technologies, phone, status, requester_id
+        technologies, phone, status, requester_id,
+        problem_statement, target_platform, prototype_type, preferred_tools, number_of_screens, reference_designs,
+        document_type, college_format, number_of_pages, plagiarism_limit, reference_file, special_instructions
       )
       VALUES (
-        ${title}, ${description}, ${category}, ${projectType}, ${budget}, ${deadline},
-        ${techArray}::text[], ${phone || ''}, 'open', ${req.user.userId}
+        ${title}, ${description || ''}, ${category || ''}, ${projectType}, ${budget}, ${deadline},
+        ${techArray}::text[], ${phone || ''}, 'open', ${req.user.userId},
+        ${problemStatement || null}, ${targetPlatform || null}, ${prototypeType || null}, 
+        ${preferredTools || null}, ${numberOfScreens || null}, ${referenceDesigns || null},
+        ${documentType || null}, ${collegeFormat || null}, ${numberOfPages || null}, 
+        ${plagiarismLimit || null}, ${referenceFile || null}, ${specialInstructions || null}
       )
       RETURNING *
     `;
