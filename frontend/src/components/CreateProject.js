@@ -14,6 +14,37 @@ function CreateProject() {
     budget: '',
     uploads: []
   });
+
+  const projectTypes = [
+    { 
+      value: 'mini', 
+      label: 'Mini Project', 
+      icon: '🚀', 
+      description: 'Quick implementation',
+      color: '#5DADE2'
+    },
+    { 
+      value: 'major', 
+      label: 'Major Project', 
+      icon: '🎓', 
+      description: 'Complex & detailed',
+      color: '#48C9B0'
+    },
+    { 
+      value: 'prototype', 
+      label: 'Prototype', 
+      icon: '⚡', 
+      description: 'MVP & proof of concept',
+      color: '#F39C12'
+    },
+    { 
+      value: 'design', 
+      label: 'Design & Documentation', 
+      icon: '📐', 
+      description: 'UI/UX & technical docs',
+      color: '#AF7AC5'
+    }
+  ];
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const categories = ['Web App', 'Mobile App', 'ML', 'AI'];
@@ -61,48 +92,44 @@ function CreateProject() {
         <form onSubmit={handleSubmit}>
           {/* Project Type Selection */}
           <div className="form-group">
-            <label>🎯 Project Type *</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '0.5rem' }}>
-              <div 
-                onClick={() => setFormData({...formData, projectType: 'mini'})}
-                style={{
-                  padding: '1.5rem',
-                  border: `3px solid ${formData.projectType === 'mini' ? '#667eea' : '#e0e0e0'}`,
-                  borderRadius: '12px',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  transition: 'all 0.3s ease',
-                  background: formData.projectType === 'mini' ? 'linear-gradient(135deg, #e7f5ff 0%, #d4edff 100%)' : 'white'
-                }}
-              >
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🚀</div>
-                <div style={{ fontWeight: '600', color: formData.projectType === 'mini' ? '#667eea' : '#333' }}>
-                  Mini Project
+            <label style={{ fontSize: '1.1rem', fontWeight: '600', color: '#2C3E50', marginBottom: '1rem', display: 'block' }}>
+              🎯 Select Project Type *
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginTop: '0.5rem' }}>
+              {projectTypes.map((type) => (
+                <div 
+                  key={type.value}
+                  onClick={() => setFormData({...formData, projectType: type.value})}
+                  style={{
+                    padding: '1.5rem 1rem',
+                    border: `2px solid ${formData.projectType === type.value ? type.color : '#E8E8E8'}`,
+                    borderRadius: '16px',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    transition: 'all 0.3s ease',
+                    background: formData.projectType === type.value 
+                      ? `linear-gradient(135deg, ${type.color}15 0%, ${type.color}08 100%)` 
+                      : '#FAFAFA',
+                    transform: formData.projectType === type.value ? 'translateY(-4px)' : 'translateY(0)',
+                    boxShadow: formData.projectType === type.value 
+                      ? `0 8px 20px ${type.color}30` 
+                      : '0 2px 8px rgba(0,0,0,0.08)'
+                  }}
+                >
+                  <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>{type.icon}</div>
+                  <div style={{ 
+                    fontWeight: '700', 
+                    color: formData.projectType === type.value ? type.color : '#2C3E50',
+                    fontSize: '1rem',
+                    marginBottom: '0.25rem'
+                  }}>
+                    {type.label}
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: '#7F8C8D', lineHeight: '1.4' }}>
+                    {type.description}
+                  </div>
                 </div>
-                <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
-                  Quick turnaround
-                </div>
-              </div>
-              <div 
-                onClick={() => setFormData({...formData, projectType: 'major'})}
-                style={{
-                  padding: '1.5rem',
-                  border: `3px solid ${formData.projectType === 'major' ? '#667eea' : '#e0e0e0'}`,
-                  borderRadius: '12px',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  transition: 'all 0.3s ease',
-                  background: formData.projectType === 'major' ? 'linear-gradient(135deg, #e7f5ff 0%, #d4edff 100%)' : 'white'
-                }}
-              >
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🎓</div>
-                <div style={{ fontWeight: '600', color: formData.projectType === 'major' ? '#667eea' : '#333' }}>
-                  Major Project
-                </div>
-                <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
-                  Complex & detailed
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 

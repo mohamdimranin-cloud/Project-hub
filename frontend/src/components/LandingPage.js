@@ -8,13 +8,14 @@ function LandingPage() {
     <div style={{ fontFamily: 'Arial, sans-serif', lineHeight: '1.6' }}>
       {/* Navigation */}
       <nav style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'linear-gradient(135deg, #2C3E50 0%, #34495E 100%)',
         padding: '1rem 0',
         position: 'fixed',
         top: 0,
         width: '100%',
         zIndex: 1000,
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+        backdropFilter: 'blur(10px)'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 2rem' }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -55,14 +56,16 @@ function LandingPage() {
 
       {/* Hero Section */}
       <section style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'linear-gradient(135deg, #2C3E50 0%, #34495E 50%, #4A5F7F 100%)',
         color: 'white',
         padding: '120px 2rem 80px',
         textAlign: 'center',
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
         <div style={{ maxWidth: '800px' }}>
           <h1 style={{
@@ -85,16 +88,19 @@ function LandingPage() {
             <button 
               onClick={() => navigate('/signup')}
               style={{
-                background: 'white',
-                color: '#667eea',
+                background: 'linear-gradient(135deg, #5DADE2 0%, #48C9B0 100%)',
+                color: 'white',
                 border: 'none',
                 padding: '1rem 2.5rem',
                 borderRadius: '50px',
                 fontSize: '1.1rem',
                 fontWeight: 'bold',
                 cursor: 'pointer',
-                boxShadow: '0 5px 15px rgba(0,0,0,0.2)'
+                boxShadow: '0 8px 25px rgba(93, 173, 226, 0.4)',
+                transition: 'all 0.3s ease'
               }}
+              onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+              onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
             >
               🚀 Post Your Project
             </button>
@@ -357,7 +363,7 @@ function LandingPage() {
             </div>
             <div>
               <h4 style={{ marginBottom: '1rem' }}>Contact</h4>
-              <p style={{ color: '#ccc' }}>Email: support@projecthub.com</p>
+              <p style={{ color: '#ccc' }}>Email: projecthub.helpdesk@gmail.com</p>
             </div>
           </div>
           <div style={{ borderTop: '1px solid #555', paddingTop: '2rem', textAlign: 'center', color: '#ccc' }}>

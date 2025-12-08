@@ -35,7 +35,7 @@ async function initializeDatabase() {
         title VARCHAR(255) NOT NULL,
         description TEXT NOT NULL,
         category VARCHAR(100) NOT NULL,
-        project_type VARCHAR(20) NOT NULL CHECK (project_type IN ('mini', 'major')),
+        project_type VARCHAR(20) NOT NULL CHECK (project_type IN ('mini', 'major', 'prototype', 'design')),
         budget DECIMAL(10, 2),
         deadline DATE NOT NULL,
         technologies TEXT[],
