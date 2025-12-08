@@ -94,10 +94,6 @@ function AdminKanbanBoard() {
             <span className="sidebar-item-icon">👥</span>
             <span>Users</span>
           </div>
-          <div className="sidebar-item" onClick={() => navigate('/admin/settings')}>
-            <span className="sidebar-item-icon">⚙️</span>
-            <span>Settings</span>
-          </div>
         </div>
         
         <div className="sidebar-menu" style={{ marginTop: '32px' }}>
