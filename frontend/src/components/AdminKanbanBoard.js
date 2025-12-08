@@ -116,9 +116,6 @@ function AdminKanbanBoard() {
         <div>
           <h1 className="kanban-title">Task Board</h1>
         </div>
-        <button className="btn-create-task" onClick={() => navigate('/admin/projects')}>
-          + Manage Projects
-        </button>
       </div>
 
       {/* Progress Bar */}
