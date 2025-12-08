@@ -95,6 +95,8 @@ router.get('/', authenticate, async (req, res) => {
       acceptedAt: p.accepted_at,
       completedAt: p.completed_at,
       adminNotes: p.admin_notes,
+      sourceCodeLink: p.source_code_link,
+      deliveryNotes: p.delivery_notes,
       progressUpdates: p.progressUpdates || [],
       createdAt: p.created_at,
       updatedAt: p.updated_at
@@ -156,6 +158,8 @@ router.get('/:id', authenticate, async (req, res) => {
       acceptedAt: project.accepted_at,
       completedAt: project.completed_at,
       adminNotes: project.admin_notes,
+      sourceCodeLink: project.source_code_link,
+      deliveryNotes: project.delivery_notes,
       progressUpdates: progressUpdates.map(pu => ({
         message: pu.message,
         percentage: pu.percentage,
@@ -387,6 +391,53 @@ router.post('/:id/progress', authenticate, authorize('admin'), async (req, res) 
     res.json({ message: 'Progress updated successfully' });
   } catch (error) {
     console.error('Add progress error:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Complete project with source code link
+router.patch('/:id/complete', authenticate, authorize('admin'), async (req, res) => {
+  try {
+    const { sourceCodeLink, deliveryNotes } = req.body;
+    
+    const projects = await sql`
+      SELECT * FROM projects WHERE id = ${req.params.id}
+    `;
+    
+    if (projects.length === 0) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+    
+    const project = projects[0];
+    
+    // Update project status to completed and add source code link
+    const updated = await sql`
+      UPDATE projects 
+      SET status = 'completed',
+          source_code_link = ${sourceCodeLink || null},
+          delivery_notes = ${deliveryNotes || null},
+          completed_at = NOW()
+      WHERE id = ${req.params.id}
+      RETURNING *
+    `;
+    
+    // Notify requester
+    await createNotification(
+      project.requester_id,
+      `Project "${project.title}" has been completed! Your source code is ready for download.`,
+      'project_completed',
+      project.id
+    );
+    
+    res.json({
+      _id: updated[0].id.toString(),
+      ...updated[0],
+      projectType: updated[0].project_type,
+      sourceCodeLink: updated[0].source_code_link,
+      deliveryNotes: updated[0].delivery_notes
+    });
+  } catch (error) {
+    console.error('Complete project error:', error);
     res.status(400).json({ error: error.message });
   }
 });

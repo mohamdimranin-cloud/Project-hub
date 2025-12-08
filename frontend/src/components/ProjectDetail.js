@@ -117,8 +117,67 @@ function ProjectDetail({ user }) {
           </div>
         </div>
 
+        {/* Source Code Link - Only show for completed projects */}
+        {project.status === 'completed' && project.sourceCodeLink && (
+          <div style={{ 
+            marginTop: '1.5rem', 
+            padding: '1.25rem', 
+            background: 'linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%)', 
+            borderRadius: '8px', 
+            border: '2px solid #28a745' 
+          }}>
+            <div style={{ fontSize: '1rem', fontWeight: '600', color: '#28a745', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              🎉 Project Completed - Source Code Available
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <a 
+                href={project.sourceCodeLink} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  background: '#28a745',
+                  color: 'white',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '25px',
+                  textDecoration: 'none',
+                  fontWeight: '600',
+                  fontSize: '1rem'
+                }}
+              >
+                📥 Download Source Code
+              </a>
+            </div>
+            {project.deliveryNotes && (
+              <div>
+                <div style={{ fontSize: '0.9rem', fontWeight: '600', color: '#28a745', marginBottom: '0.5rem' }}>
+                  Delivery Notes:
+                </div>
+                <div style={{ 
+                  fontSize: '0.9rem', 
+                  lineHeight: '1.6', 
+                  color: '#333',
+                  background: 'white',
+                  padding: '1rem',
+                  borderRadius: '6px',
+                  whiteSpace: 'pre-wrap'
+                }}>
+                  {project.deliveryNotes}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <div style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#666' }}>
           Submitted on: {new Date(project.createdAt).toLocaleString()}
+          {project.completedAt && (
+            <span style={{ marginLeft: '1rem' }}>
+              • Completed on: {new Date(project.completedAt).toLocaleString()}
+            </span>
+          )}
         </div>
       </div>
 

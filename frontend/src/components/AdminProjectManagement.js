@@ -9,6 +9,8 @@ function AdminProjectManagement({ onLogout }) {
   const [selectedProject, setSelectedProject] = useState(null);
   const [progressModal, setProgressModal] = useState(null);
   const [progressData, setProgressData] = useState({ percentage: 0, message: '' });
+  const [completeModal, setCompleteModal] = useState(null);
+  const [completeData, setCompleteData] = useState({ sourceCodeLink: '', deliveryNotes: '' });
 
   useEffect(() => {
     loadProjects();
@@ -40,6 +42,22 @@ function AdminProjectManagement({ onLogout }) {
       loadProjects();
     } catch (error) {
       alert('Failed to update progress');
+    }
+  };
+
+  const handleCompleteProject = async () => {
+    if (!completeData.sourceCodeLink.trim()) {
+      alert('Please enter the source code link');
+      return;
+    }
+    try {
+      await projects.complete(completeModal._id, completeData);
+      alert('✅ Project completed successfully!');
+      setCompleteModal(null);
+      setCompleteData({ sourceCodeLink: '', deliveryNotes: '' });
+      loadProjects();
+    } catch (error) {
+      alert('Failed to complete project');
     }
   };
 
@@ -272,11 +290,11 @@ function AdminProjectManagement({ onLogout }) {
 
               {project.status === 'in-progress' && (
                 <button 
-                  onClick={() => handleStatusChange(project._id, 'completed')} 
+                  onClick={() => setCompleteModal(project)} 
                   className="btn btn-primary"
                   style={{ background: '#28a745', borderColor: '#28a745' }}
                 >
-                  Mark Complete
+                  Complete Project
                 </button>
               )}
             </div>
@@ -320,6 +338,63 @@ function AdminProjectManagement({ onLogout }) {
               <button onClick={() => {
                 setProgressModal(null);
                 setProgressData({ percentage: 0, message: '' });
+              }} className="btn btn-secondary" style={{ flex: 1 }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Complete Project Modal */}
+      {completeModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div className="card" style={{ maxWidth: '500px', width: '90%', maxHeight: '90vh', overflow: 'auto' }}>
+            <h2>Complete Project</h2>
+            <p><strong>Project:</strong> {completeModal.title}</p>
+            
+            <div className="form-group">
+              <label>Source Code Link *</label>
+              <input
+                type="url"
+                value={completeData.sourceCodeLink}
+                onChange={(e) => setCompleteData({...completeData, sourceCodeLink: e.target.value})}
+                placeholder="https://github.com/username/repository or https://drive.google.com/..."
+                required
+              />
+              <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem' }}>
+                Provide GitHub repository, Google Drive, or any accessible link to the source code
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Delivery Notes (optional)</label>
+              <textarea
+                rows="4"
+                value={completeData.deliveryNotes}
+                onChange={(e) => setCompleteData({...completeData, deliveryNotes: e.target.value})}
+                placeholder="Additional notes about the delivery, setup instructions, or important information for the student..."
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button onClick={handleCompleteProject} className="btn btn-primary" style={{ flex: 1, background: '#28a745', borderColor: '#28a745' }}>
+                🎉 Complete Project
+              </button>
+              <button onClick={() => {
+                setCompleteModal(null);
+                setCompleteData({ sourceCodeLink: '', deliveryNotes: '' });
               }} className="btn btn-secondary" style={{ flex: 1 }}>
                 Cancel
               </button>
