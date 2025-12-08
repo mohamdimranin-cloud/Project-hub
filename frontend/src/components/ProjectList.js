@@ -15,7 +15,11 @@ function ProjectList({ user }) {
     try {
       const params = filter !== 'all' ? { status: filter } : {};
       const response = await projects.getAll(params);
-      setProjectList(response.data);
+      // Sort by creation date - latest first
+      const sortedProjects = response.data.sort((a, b) => {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+      setProjectList(sortedProjects);
     } catch (error) {
       console.error('Failed to load projects', error);
     }
