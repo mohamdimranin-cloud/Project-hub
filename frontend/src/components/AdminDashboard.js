@@ -51,6 +51,7 @@ function AdminDashboard({ onLogout }) {
   const pendingProjects = getProjectsByStatus('pending');
   const inProgressProjects = getProjectsByStatus('in-progress');
   const completedProjects = getProjectsByStatus('completed');
+  const rejectedProjects = projectList.filter(p => p.status === 'rejected');
   
   // Analytics calculations
   const totalRevenue = projectList
@@ -180,6 +181,10 @@ function AdminDashboard({ onLogout }) {
         <div className="stat-card" style={{ borderLeftColor: '#43C654' }}>
           <h3>✅ {completedProjects.length}</h3>
           <p>Completed</p>
+        </div>
+        <div className="stat-card" style={{ borderLeftColor: '#dc3545' }}>
+          <h3>❌ {rejectedProjects.length}</h3>
+          <p>Rejected</p>
         </div>
         <div className="stat-card" style={{ borderLeftColor: '#43C654' }}>
           <h3>💰 ₹{totalRevenue.toLocaleString()}</h3>
