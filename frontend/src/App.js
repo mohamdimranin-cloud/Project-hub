@@ -17,6 +17,7 @@ import Settings from './components/Settings';
 import Navbar from './components/Navbar';
 import TermsAndConditions from './components/TermsAndConditions';
 import PrivacyPolicy from './components/PrivacyPolicy';
+import Chatbot from './components/Chatbot';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -47,9 +48,13 @@ function App() {
     setUser(updatedUser);
   };
 
+  const location = window.location.pathname;
+  const showChatbot = !['/terms', '/privacy'].includes(location);
+
   return (
     <BrowserRouter>
       {user && user.role !== 'admin' && <Navbar user={user} onLogout={handleLogout} />}
+      {showChatbot && <Chatbot />}
       <Routes>
         <Route path="/login" element={!user ? <Login onLogin={handleLogin} /> : user.role === 'admin' ? <Navigate to="/admin/dashboard" /> : <Navigate to="/student/dashboard" />} />
         <Route path="/signup" element={!user ? <Login onLogin={handleLogin} isSignup={true} /> : user.role === 'admin' ? <Navigate to="/admin/dashboard" /> : <Navigate to="/student/dashboard" />} />
