@@ -326,6 +326,28 @@ function AdminProjectManagement({ onLogout }) {
                   Complete Project
                 </button>
               )}
+
+              {project.status === 'completed' && project.sourceCodeLink && (
+                <button 
+                  onClick={async () => {
+                    try {
+                      await projects.toggleDownloadLock(project._id, !project.downloadUnlocked);
+                      alert(project.downloadUnlocked ? '🔒 Download locked' : '🔓 Download unlocked');
+                      loadProjects();
+                    } catch (error) {
+                      alert('Failed to toggle download lock');
+                    }
+                  }}
+                  className="btn btn-primary"
+                  style={{ 
+                    background: project.downloadUnlocked ? '#ffc107' : '#28a745', 
+                    borderColor: project.downloadUnlocked ? '#ffc107' : '#28a745',
+                    color: project.downloadUnlocked ? '#000' : '#fff'
+                  }}
+                >
+                  {project.downloadUnlocked ? '🔒 Lock Download' : '🔓 Unlock Download'}
+                </button>
+              )}
             </div>
           </div>
         ))

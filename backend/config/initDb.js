@@ -63,6 +63,13 @@ async function initializeDatabase() {
     `;
     console.log('✅ Projects table migrated with source code columns');
 
+    // Add download_unlocked column if it doesn't exist
+    await sql`
+      ALTER TABLE projects 
+      ADD COLUMN IF NOT EXISTS download_unlocked BOOLEAN DEFAULT false
+    `;
+    console.log('✅ Projects table migrated with download lock column');
+
     // Create Progress Updates Table
     await sql`
       CREATE TABLE IF NOT EXISTS progress_updates (

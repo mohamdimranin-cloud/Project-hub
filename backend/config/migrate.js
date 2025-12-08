@@ -25,6 +25,21 @@ async function runMigration() {
     `;
     console.log('✅ Created index for source_code_link');
 
+    // Add download_unlocked column
+    await sql`
+      ALTER TABLE projects 
+      ADD COLUMN IF NOT EXISTS download_unlocked BOOLEAN DEFAULT false
+    `;
+    console.log('✅ Added download_unlocked column to projects table');
+
+    // Create index for download_unlocked
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_projects_download_unlocked 
+      ON projects(download_unlocked) 
+      WHERE download_unlocked = true
+    `;
+    console.log('✅ Created index for download_unlocked');
+
     console.log('\n✅ Migration completed successfully!');
     process.exit(0);
   } catch (error) {

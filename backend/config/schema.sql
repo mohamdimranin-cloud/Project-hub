@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS projects (
     admin_notes TEXT,
     source_code_link VARCHAR(500),
     delivery_notes TEXT,
+    download_unlocked BOOLEAN DEFAULT false,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

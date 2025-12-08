@@ -97,6 +97,7 @@ router.get('/', authenticate, async (req, res) => {
       adminNotes: p.admin_notes,
       sourceCodeLink: p.source_code_link,
       deliveryNotes: p.delivery_notes,
+      downloadUnlocked: p.download_unlocked || false,
       progressUpdates: p.progressUpdates || [],
       createdAt: p.created_at,
       updatedAt: p.updated_at
@@ -160,6 +161,7 @@ router.get('/:id', authenticate, async (req, res) => {
       adminNotes: project.admin_notes,
       sourceCodeLink: project.source_code_link,
       deliveryNotes: project.delivery_notes,
+      downloadUnlocked: project.download_unlocked || false,
       progressUpdates: progressUpdates.map(pu => ({
         message: pu.message,
         percentage: pu.percentage,
@@ -438,6 +440,48 @@ router.patch('/:id/complete', authenticate, authorize('admin'), async (req, res)
     });
   } catch (error) {
     console.error('Complete project error:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Toggle download lock
+router.patch('/:id/download-lock', authenticate, authorize('admin'), async (req, res) => {
+  try {
+    const { unlocked } = req.body;
+    
+    const projects = await sql`
+      SELECT * FROM projects WHERE id = ${req.params.id}
+    `;
+    
+    if (projects.length === 0) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+    
+    const project = projects[0];
+    
+    const updated = await sql`
+      UPDATE projects 
+      SET download_unlocked = ${unlocked}
+      WHERE id = ${req.params.id}
+      RETURNING *
+    `;
+    
+    // Notify requester if download is unlocked
+    if (unlocked) {
+      await createNotification(
+        project.requester_id,
+        `Source code download has been unlocked for "${project.title}"`,
+        'download_unlocked',
+        project.id
+      );
+    }
+    
+    res.json({
+      _id: updated[0].id.toString(),
+      downloadUnlocked: updated[0].download_unlocked
+    });
+  } catch (error) {
+    console.error('Toggle download lock error:', error);
     res.status(400).json({ error: error.message });
   }
 });

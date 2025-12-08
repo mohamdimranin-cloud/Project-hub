@@ -122,34 +122,72 @@ function ProjectDetail({ user }) {
           <div style={{ 
             marginTop: '1.5rem', 
             padding: '1.25rem', 
-            background: 'linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%)', 
+            background: project.downloadUnlocked 
+              ? 'linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%)' 
+              : 'linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%)', 
             borderRadius: '8px', 
-            border: '2px solid #28a745' 
+            border: project.downloadUnlocked 
+              ? '2px solid #28a745' 
+              : '2px solid #ffc107' 
           }}>
-            <div style={{ fontSize: '1rem', fontWeight: '600', color: '#28a745', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              🎉 Project Completed - Source Code Available
+            <div style={{ fontSize: '1rem', fontWeight: '600', color: project.downloadUnlocked ? '#28a745' : '#856404', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {project.downloadUnlocked ? '🎉 Project Completed - Source Code Available' : '🔒 Project Completed - Download Locked'}
             </div>
-            <div style={{ marginBottom: '1rem' }}>
-              <a 
-                href={project.sourceCodeLink} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  background: '#28a745',
-                  color: 'white',
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '25px',
-                  textDecoration: 'none',
-                  fontWeight: '600',
-                  fontSize: '1rem'
-                }}
-              >
-                📥 Download Source Code
-              </a>
-            </div>
+            {project.downloadUnlocked ? (
+              <div style={{ marginBottom: '1rem' }}>
+                <a 
+                  href={project.sourceCodeLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    background: '#28a745',
+                    color: 'white',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '25px',
+                    textDecoration: 'none',
+                    fontWeight: '600',
+                    fontSize: '1rem'
+                  }}
+                >
+                  📥 Download Source Code
+                </a>
+              </div>
+            ) : (
+              <div style={{ marginBottom: '1rem' }}>
+                <button 
+                  disabled
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    background: '#ccc',
+                    color: '#666',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '25px',
+                    border: 'none',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                    cursor: 'not-allowed',
+                    opacity: 0.6
+                  }}
+                >
+                  🔒 Download Locked by Admin
+                </button>
+                <div style={{ 
+                  marginTop: '1rem', 
+                  padding: '0.75rem', 
+                  background: 'rgba(255,255,255,0.7)', 
+                  borderRadius: '6px',
+                  fontSize: '0.9rem',
+                  color: '#856404'
+                }}>
+                  ℹ️ The admin needs to unlock the download before you can access the source code. Please contact admin if you have completed payment or fulfilled all requirements.
+                </div>
+              </div>
+            )}
             {project.deliveryNotes && (
               <div>
                 <div style={{ fontSize: '0.9rem', fontWeight: '600', color: '#28a745', marginBottom: '0.5rem' }}>

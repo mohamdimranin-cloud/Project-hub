@@ -30,6 +30,7 @@ export const projects = {
   addDeliverable: (id, data) => api.post(`/projects/${id}/deliverables`, data),
   requestRevision: (id, reason) => api.post(`/projects/${id}/revision`, { reason }),
   complete: (id, data) => api.patch(`/projects/${id}/complete`, data),
+  toggleDownloadLock: (id, unlocked) => api.patch(`/projects/${id}/download-lock`, { unlocked }),
   updateNotes: (id, notes) => api.patch(`/projects/${id}/notes`, { notes }),
 };
 
