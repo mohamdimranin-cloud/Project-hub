@@ -25,7 +25,7 @@ function LandingPage() {
             <button 
               onClick={() => navigate('/login')}
               style={{
-                background: 'rgba(255,255,255,0.2)',
+                background: 'transparent',
                 color: 'white',
                 border: '2px solid white',
                 padding: '0.5rem 1.5rem',
@@ -35,6 +35,20 @@ function LandingPage() {
               }}
             >
               Login
+            </button>
+            <button 
+              onClick={() => navigate('/login')}
+              style={{
+                background: 'white',
+                color: '#667eea',
+                border: '2px solid white',
+                padding: '0.5rem 1.5rem',
+                borderRadius: '25px',
+                cursor: 'pointer',
+                fontWeight: '600'
+              }}
+            >
+              Sign Up
             </button>
           </div>
         </div>
