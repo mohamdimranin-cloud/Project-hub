@@ -18,8 +18,7 @@ function LandingPage() {
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 2rem' }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <img src={require('../images/logo.png')} alt="ProjectHub" style={{ height: '40px', marginRight: '10px' }} />
-            <span style={{ color: 'white', fontSize: '1.5rem', fontWeight: 'bold' }}>ProjectHub</span>
+            <img src={require('../images/logo.png')} alt="ProjectHub" style={{ height: '40px' }} />
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <button 
@@ -337,8 +336,7 @@ function LandingPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-                <img src={require('../images/logo.png')} alt="ProjectHub" style={{ height: '30px', marginRight: '10px' }} />
-                <span style={{ fontSize: '1.3rem', fontWeight: 'bold' }}>ProjectHub</span>
+                <img src={require('../images/logo.png')} alt="ProjectHub" style={{ height: '30px' }} />
               </div>
               <p style={{ color: '#ccc' }}>Turn your ideas into ready-to-use projects</p>
             </div>
