@@ -47,11 +47,21 @@ async function initializeDatabase() {
         accepted_at TIMESTAMP,
         completed_at TIMESTAMP,
         admin_notes TEXT,
+        source_code_link VARCHAR(500),
+        delivery_notes TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
     console.log('✅ Projects table created');
+
+    // Add source_code_link and delivery_notes columns if they don't exist (migration)
+    await sql`
+      ALTER TABLE projects 
+      ADD COLUMN IF NOT EXISTS source_code_link VARCHAR(500),
+      ADD COLUMN IF NOT EXISTS delivery_notes TEXT
+    `;
+    console.log('✅ Projects table migrated with source code columns');
 
     // Create Progress Updates Table
     await sql`

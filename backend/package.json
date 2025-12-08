@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "init-db": "node config/initDb.js"
+    "init-db": "node config/initDb.js",
+    "migrate": "node config/migrate.js"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",

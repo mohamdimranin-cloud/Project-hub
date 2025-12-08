@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS projects (
     accepted_at TIMESTAMP,
     completed_at TIMESTAMP,
     admin_notes TEXT,
+    source_code_link VARCHAR(500),
+    delivery_notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
