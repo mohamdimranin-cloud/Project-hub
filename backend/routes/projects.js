@@ -226,6 +226,82 @@ router.post('/', authenticate, authorize('requester', 'admin'), async (req, res)
   }
 });
 
+// Update project (for requesters to edit their projects)
+router.patch('/:id', authenticate, async (req, res) => {
+  try {
+    const { title, description, category, projectType, budget, deadline, technologies } = req.body;
+    
+    // Check if project exists and belongs to user (or user is admin)
+    const projects = await sql`
+      SELECT * FROM projects WHERE id = ${req.params.id}
+    `;
+    
+    if (projects.length === 0) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+    
+    const project = projects[0];
+    
+    // Only allow requester to edit their own project or admin to edit any
+    if (req.user.role !== 'admin' && project.requester_id !== req.user.userId) {
+      return res.status(403).json({ error: 'Not authorized to edit this project' });
+    }
+    
+    // Only allow editing if project is in open or in-review status
+    if (!['open', 'in-review'].includes(project.status)) {
+      return res.status(400).json({ error: 'Cannot edit project in current status' });
+    }
+    
+    // Convert technologies array to PostgreSQL array format
+    const techArray = technologies && technologies.length > 0 
+      ? `{${technologies.map(t => `"${t.replace(/"/g, '\\"')}"`).join(',')}}` 
+      : '{}';
+    
+    const updated = await sql`
+      UPDATE projects 
+      SET title = ${title},
+          description = ${description},
+          category = ${category},
+          project_type = ${projectType},
+          budget = ${budget},
+          deadline = ${deadline},
+          technologies = ${techArray}::text[],
+          updated_at = NOW()
+      WHERE id = ${req.params.id}
+      RETURNING *
+    `;
+    
+    // Notify admins if requester made changes
+    if (req.user.role === 'requester') {
+      const admins = await sql`SELECT id FROM users WHERE role = 'admin'`;
+      for (const admin of admins) {
+        await createNotification(
+          admin.id,
+          `Project "${title}" has been updated by the requester`,
+          'project_updated',
+          project.id
+        );
+      }
+    }
+    
+    res.json({
+      _id: updated[0].id.toString(),
+      title: updated[0].title,
+      description: updated[0].description,
+      category: updated[0].category,
+      projectType: updated[0].project_type,
+      budget: parseFloat(updated[0].budget),
+      deadline: updated[0].deadline,
+      technologies: updated[0].technologies || [],
+      status: updated[0].status,
+      updatedAt: updated[0].updated_at
+    });
+  } catch (error) {
+    console.error('Update project error:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // Update project status
 router.patch('/:id/status', authenticate, authorize('admin'), async (req, res) => {
   try {

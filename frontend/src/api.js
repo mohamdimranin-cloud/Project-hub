@@ -23,6 +23,7 @@ export const projects = {
   getAll: (params) => api.get('/projects', { params }),
   getById: (id) => api.get(`/projects/${id}`),
   create: (data) => api.post('/projects', data),
+  update: (id, data) => api.patch(`/projects/${id}`, data),
   updateStatus: (id, status) => api.patch(`/projects/${id}/status`, { status }),
   assignDeveloper: (id, developerId, estimatedDelivery) => api.patch(`/projects/${id}/assign`, { developerId, estimatedDelivery }),
   addProgress: (id, message) => api.post(`/projects/${id}/progress`, { message }),

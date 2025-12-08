@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard';
 import ProjectList from './components/ProjectList';
 import ProjectDetail from './components/ProjectDetail';
 import CreateProject from './components/CreateProject';
+import EditProject from './components/EditProject';
 import Profile from './components/Profile';
 import Notifications from './components/Notifications';
 import AdminPanel from './components/AdminPanel';
@@ -70,6 +71,11 @@ function App() {
         <Route path="/student/create-project" element={
           user ? (
             user.role === 'requester' ? <CreateProject /> : <Navigate to="/admin/dashboard" replace />
+          ) : <Navigate to="/login" replace />
+        } />
+        <Route path="/student/projects/:id/edit" element={
+          user ? (
+            user.role === 'requester' ? <EditProject /> : <Navigate to="/admin/dashboard" replace />
           ) : <Navigate to="/login" replace />
         } />
         <Route path="/student/profile" element={

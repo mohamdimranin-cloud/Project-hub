@@ -36,6 +36,21 @@ function ProjectDetail({ user }) {
             <h1 style={{ marginBottom: '0.5rem' }}>{project.title}</h1>
             <span className={`status-badge status-${project.status}`}>{project.status.toUpperCase()}</span>
           </div>
+          {user?.role === 'requester' && (project.status === 'open' || project.status === 'in-review') && (
+            <button 
+              onClick={() => navigate(`/student/projects/${id}/edit`)}
+              className="btn btn-primary"
+              style={{ 
+                background: '#28a745', 
+                borderColor: '#28a745',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+            >
+              ✏️ Edit Project
+            </button>
+          )}
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', padding: '1rem', background: '#f8f9fa', borderRadius: '8px', marginBottom: '1.5rem' }}>
