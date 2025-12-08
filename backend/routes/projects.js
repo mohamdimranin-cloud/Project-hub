@@ -98,6 +98,20 @@ router.get('/', authenticate, async (req, res) => {
       sourceCodeLink: p.source_code_link,
       deliveryNotes: p.delivery_notes,
       downloadUnlocked: p.download_unlocked || false,
+      // Prototype fields
+      problemStatement: p.problem_statement,
+      targetPlatform: p.target_platform,
+      prototypeType: p.prototype_type,
+      preferredTools: p.preferred_tools,
+      numberOfScreens: p.number_of_screens,
+      referenceDesigns: p.reference_designs,
+      // Documentation fields
+      documentType: p.document_type,
+      collegeFormat: p.college_format,
+      numberOfPages: p.number_of_pages,
+      plagiarismLimit: p.plagiarism_limit,
+      referenceFile: p.reference_file,
+      specialInstructions: p.special_instructions,
       progressUpdates: p.progressUpdates || [],
       createdAt: p.created_at,
       updatedAt: p.updated_at
@@ -162,6 +176,20 @@ router.get('/:id', authenticate, async (req, res) => {
       sourceCodeLink: project.source_code_link,
       deliveryNotes: project.delivery_notes,
       downloadUnlocked: project.download_unlocked || false,
+      // Prototype fields
+      problemStatement: project.problem_statement,
+      targetPlatform: project.target_platform,
+      prototypeType: project.prototype_type,
+      preferredTools: project.preferred_tools,
+      numberOfScreens: project.number_of_screens,
+      referenceDesigns: project.reference_designs,
+      // Documentation fields
+      documentType: project.document_type,
+      collegeFormat: project.college_format,
+      numberOfPages: project.number_of_pages,
+      plagiarismLimit: project.plagiarism_limit,
+      referenceFile: project.reference_file,
+      specialInstructions: project.special_instructions,
       progressUpdates: progressUpdates.map(pu => ({
         message: pu.message,
         percentage: pu.percentage,

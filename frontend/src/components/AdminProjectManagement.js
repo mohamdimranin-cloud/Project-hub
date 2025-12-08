@@ -161,14 +161,17 @@ function AdminProjectManagement({ onLogout }) {
               <option value="Mobile App">Mobile App</option>
               <option value="ML">ML</option>
               <option value="AI">AI</option>
+              <option value="Other">Other</option>
             </select>
           </div>
           <div className="form-group">
             <label>Type</label>
             <select value={filters.projectType} onChange={(e) => setFilters({...filters, projectType: e.target.value})}>
               <option value="">All</option>
-              <option value="mini">Mini</option>
-              <option value="major">Major</option>
+              <option value="mini">Mini Project</option>
+              <option value="major">Major Project</option>
+              <option value="prototype">Prototype</option>
+              <option value="design">Design & Documentation</option>
             </select>
           </div>
         </div>
@@ -191,7 +194,12 @@ function AdminProjectManagement({ onLogout }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', padding: '1rem', background: '#f8f9fa', borderRadius: '6px', marginBottom: '1rem' }}>
               <div>
                 <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: '0.25rem' }}>Project Type</div>
-                <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>{project.projectType === 'mini' ? 'Mini Project' : 'Major Project'}</div>
+                <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>
+                  {project.projectType === 'mini' ? '🚀 Mini Project' : 
+                   project.projectType === 'major' ? '🎓 Major Project' :
+                   project.projectType === 'prototype' ? '⚡ Prototype' :
+                   project.projectType === 'design' ? '📐 Design & Documentation' : project.projectType}
+                </div>
               </div>
               <div>
                 <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: '0.25rem' }}>Category</div>
@@ -217,6 +225,102 @@ function AdminProjectManagement({ onLogout }) {
                       {tech}
                     </span>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Prototype Specific Fields */}
+            {project.projectType === 'prototype' && (
+              <div style={{ marginBottom: '1rem', padding: '1rem', background: '#FFF3E0', borderRadius: '6px', borderLeft: '4px solid #F39C12' }}>
+                <div style={{ fontSize: '0.9rem', fontWeight: '600', color: '#F39C12', marginBottom: '0.75rem' }}>⚡ Prototype Details</div>
+                <div style={{ display: 'grid', gap: '0.75rem' }}>
+                  {project.problemStatement && (
+                    <div>
+                      <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: '600' }}>Problem Statement: </span>
+                      <div style={{ marginTop: '0.25rem', fontSize: '0.9rem' }}>{project.problemStatement}</div>
+                    </div>
+                  )}
+                  {project.targetPlatform && (
+                    <div>
+                      <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: '600' }}>Target Platform: </span>
+                      <span style={{ fontSize: '0.9rem' }}>{project.targetPlatform}</span>
+                    </div>
+                  )}
+                  {project.prototypeType && (
+                    <div>
+                      <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: '600' }}>Prototype Type: </span>
+                      <span style={{ fontSize: '0.9rem' }}>{project.prototypeType}</span>
+                    </div>
+                  )}
+                  {project.preferredTools && (
+                    <div>
+                      <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: '600' }}>Preferred Tools: </span>
+                      <span style={{ fontSize: '0.9rem' }}>{project.preferredTools}</span>
+                    </div>
+                  )}
+                  {project.numberOfScreens && (
+                    <div>
+                      <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: '600' }}>Number of Screens: </span>
+                      <span style={{ fontSize: '0.9rem' }}>{project.numberOfScreens}</span>
+                    </div>
+                  )}
+                  {project.referenceDesigns && (
+                    <div>
+                      <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: '600' }}>Reference Designs: </span>
+                      <div style={{ marginTop: '0.25rem', fontSize: '0.9rem', whiteSpace: 'pre-wrap' }}>{project.referenceDesigns}</div>
+                    </div>
+                  )}
+                  {project.specialInstructions && (
+                    <div>
+                      <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: '600' }}>Special Instructions: </span>
+                      <div style={{ marginTop: '0.25rem', fontSize: '0.9rem', whiteSpace: 'pre-wrap' }}>{project.specialInstructions}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Documentation Specific Fields */}
+            {project.projectType === 'design' && (
+              <div style={{ marginBottom: '1rem', padding: '1rem', background: '#F3E5F5', borderRadius: '6px', borderLeft: '4px solid #AF7AC5' }}>
+                <div style={{ fontSize: '0.9rem', fontWeight: '600', color: '#AF7AC5', marginBottom: '0.75rem' }}>📐 Documentation Details</div>
+                <div style={{ display: 'grid', gap: '0.75rem' }}>
+                  {project.documentType && (
+                    <div>
+                      <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: '600' }}>Document Type: </span>
+                      <span style={{ fontSize: '0.9rem' }}>{project.documentType}</span>
+                    </div>
+                  )}
+                  {project.collegeFormat && (
+                    <div>
+                      <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: '600' }}>College Format: </span>
+                      <span style={{ fontSize: '0.9rem' }}>{project.collegeFormat}</span>
+                    </div>
+                  )}
+                  {project.numberOfPages && (
+                    <div>
+                      <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: '600' }}>Number of Pages: </span>
+                      <span style={{ fontSize: '0.9rem' }}>{project.numberOfPages}</span>
+                    </div>
+                  )}
+                  {project.plagiarismLimit && (
+                    <div>
+                      <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: '600' }}>Plagiarism Limit: </span>
+                      <span style={{ fontSize: '0.9rem', fontWeight: '600', color: '#AF7AC5' }}>{project.plagiarismLimit}</span>
+                    </div>
+                  )}
+                  {project.referenceFile && (
+                    <div>
+                      <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: '600' }}>Reference File: </span>
+                      <div style={{ marginTop: '0.25rem', fontSize: '0.9rem', whiteSpace: 'pre-wrap' }}>{project.referenceFile}</div>
+                    </div>
+                  )}
+                  {project.specialInstructions && (
+                    <div>
+                      <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: '600' }}>Special Instructions: </span>
+                      <div style={{ marginTop: '0.25rem', fontSize: '0.9rem', whiteSpace: 'pre-wrap' }}>{project.specialInstructions}</div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
