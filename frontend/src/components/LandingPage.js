@@ -543,8 +543,8 @@ function LandingPage() {
             <div>
               <h4 style={{ marginBottom: '1rem' }}>Legal</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <a href="#" style={{ color: '#ccc', textDecoration: 'none' }}>Privacy Policy</a>
-                <a href="#" style={{ color: '#ccc', textDecoration: 'none' }}>Terms & Conditions</a>
+                <a href="/privacy" style={{ color: '#ccc', textDecoration: 'none' }}>Privacy Policy</a>
+                <a href="/terms" style={{ color: '#ccc', textDecoration: 'none' }}>Terms & Conditions</a>
               </div>
             </div>
             <div>
@@ -553,7 +553,10 @@ function LandingPage() {
             </div>
           </div>
           <div style={{ borderTop: '1px solid #555', paddingTop: '2rem', textAlign: 'center', color: '#ccc' }}>
-            <p>&copy; 2024 ProjectHub. All rights reserved.</p>
+            <p style={{ marginBottom: '0.5rem' }}>&copy; 2024 ProjectHub. All rights reserved.</p>
+            <p style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+              By using ProjectHub, you agree to our <a href="/terms" style={{ color: '#5DADE2', textDecoration: 'none' }}>Terms & Conditions</a> and <a href="/privacy" style={{ color: '#5DADE2', textDecoration: 'none' }}>Privacy Policy</a>.
+            </p>
           </div>
         </div>
       </footer>

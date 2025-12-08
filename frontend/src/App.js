@@ -15,6 +15,8 @@ import AdminProjectManagement from './components/AdminProjectManagement';
 import AdminKanbanBoard from './components/AdminKanbanBoard';
 import Settings from './components/Settings';
 import Navbar from './components/Navbar';
+import TermsAndConditions from './components/TermsAndConditions';
+import PrivacyPolicy from './components/PrivacyPolicy';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -131,6 +133,10 @@ function App() {
           ) : <Navigate to="/login" replace />
         } />
         
+        {/* Public Pages */}
+        <Route path="/terms" element={<TermsAndConditions />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+
         {/* Landing Page and Root Route */}
         <Route path="/" element={
           user ? (
