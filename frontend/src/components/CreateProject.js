@@ -16,7 +16,7 @@ function CreateProject() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const categories = ['IOT', 'Web App', 'Mobile App', 'ML', 'AI', 'Embedded', 'Other'];
+  const categories = ['Web App', 'Mobile App', 'ML', 'AI', 'Other'];
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -123,12 +123,10 @@ function AdminProjectManagement({ onLogout }) {
             <label>Category</label>
             <select value={filters.category} onChange={(e) => setFilters({...filters, category: e.target.value})}>
               <option value="">All</option>
-              <option value="IOT">IOT</option>
               <option value="Web App">Web App</option>
               <option value="Mobile App">Mobile App</option>
               <option value="ML">ML</option>
               <option value="AI">AI</option>
-              <option value="Embedded">Embedded</option>
             </select>
           </div>
           <div className="form-group">
