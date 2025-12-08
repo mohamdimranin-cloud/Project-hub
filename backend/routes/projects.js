@@ -177,6 +177,11 @@ router.post('/', authenticate, authorize('requester', 'admin'), async (req, res)
   try {
     const { title, description, category, projectType, budget, deadline, technologies, phone } = req.body;
     
+    // Convert technologies array to PostgreSQL array format
+    const techArray = technologies && technologies.length > 0 
+      ? `{${technologies.map(t => `"${t.replace(/"/g, '\\"')}"`).join(',')}}` 
+      : '{}';
+    
     const newProject = await sql`
       INSERT INTO projects (
         title, description, category, project_type, budget, deadline, 
@@ -184,7 +189,7 @@ router.post('/', authenticate, authorize('requester', 'admin'), async (req, res)
       )
       VALUES (
         ${title}, ${description}, ${category}, ${projectType}, ${budget}, ${deadline},
-        ${sql.array(technologies || [])}, ${phone || ''}, 'open', ${req.user.userId}
+        ${techArray}::text[], ${phone || ''}, 'open', ${req.user.userId}
       )
       RETURNING *
     `;
@@ -204,8 +209,16 @@ router.post('/', authenticate, authorize('requester', 'admin'), async (req, res)
     
     res.status(201).json({
       _id: project.id.toString(),
-      ...project,
-      projectType: project.project_type
+      title: project.title,
+      description: project.description,
+      category: project.category,
+      projectType: project.project_type,
+      budget: parseFloat(project.budget),
+      deadline: project.deadline,
+      technologies: project.technologies || [],
+      phone: project.phone,
+      status: project.status,
+      createdAt: project.created_at
     });
   } catch (error) {
     console.error('Create project error:', error);
