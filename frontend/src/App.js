@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import LandingPage from './components/LandingPage';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import ProjectList from './components/ProjectList';
@@ -123,12 +124,12 @@ function App() {
           ) : <Navigate to="/login" replace />
         } />
         
-        {/* Redirect root based on role */}
+        {/* Landing Page and Root Route */}
         <Route path="/" element={
           user ? (
             user.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/student/dashboard" replace />
           ) : (
-            <Navigate to="/login" replace />
+            <LandingPage />
           )
         } />
         
@@ -137,7 +138,7 @@ function App() {
           user ? (
             user.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/student/dashboard" replace />
           ) : (
-            <Navigate to="/login" replace />
+            <Navigate to="/" replace />
           )
         } />
       </Routes>
