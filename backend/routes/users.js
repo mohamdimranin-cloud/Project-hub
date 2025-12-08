@@ -1,39 +1,102 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
-import { users } from '../data/store.js';
+import sql from '../config/database.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Change password - MUST be before /:id routes
+// Get current user
+router.get('/me', authenticate, async (req, res) => {
+  try {
+    const users = await sql`
+      SELECT id, email, name, phone, branch, college, role, is_active, created_at
+      FROM users 
+      WHERE id = ${req.user.userId}
+    `;
+    
+    if (users.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const user = users[0];
+    res.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      branch: user.branch,
+      college: user.college,
+      role: user.role,
+      isActive: user.is_active,
+      createdAt: user.created_at
+    });
+  } catch (error) {
+    console.error('Get current user error:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Update current user
+router.patch('/me', authenticate, async (req, res) => {
+  try {
+    const { name, phone, branch, college } = req.body;
+    
+    const updated = await sql`
+      UPDATE users 
+      SET name = ${name}, 
+          phone = ${phone || ''}, 
+          branch = ${branch || ''}, 
+          college = ${college || ''}
+      WHERE id = ${req.user.userId}
+      RETURNING id, email, name, phone, branch, college, role, is_active
+    `;
+    
+    if (updated.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const user = updated[0];
+    res.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      branch: user.branch,
+      college: user.college,
+      role: user.role,
+      isActive: user.is_active
+    });
+  } catch (error) {
+    console.error('Update user error:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Change password
 router.patch('/me/password', authenticate, async (req, res) => {
   try {
-    console.log('Password change request received');
     const { currentPassword, newPassword } = req.body;
     
-    console.log('Request body:', { currentPassword: '***', newPassword: '***' });
-    
     if (!currentPassword || !newPassword) {
-      console.log('Missing password fields');
       return res.status(400).json({ error: 'Current password and new password are required' });
     }
     
     if (newPassword.length < 6) {
-      console.log('Password too short');
       return res.status(400).json({ error: 'New password must be at least 6 characters' });
     }
     
-    const user = users.find(u => u._id === req.user.userId);
-    if (!user) {
-      console.log('User not found:', req.user.userId);
+    const users = await sql`
+      SELECT * FROM users WHERE id = ${req.user.userId}
+    `;
+    
+    if (users.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
     
-    console.log('User found:', user.email);
+    const user = users[0];
     
     // Verify current password
     const isValid = await bcrypt.compare(currentPassword, user.password);
-    console.log('Password valid:', isValid);
     
     if (!isValid) {
       return res.status(401).json({ error: 'Current password is incorrect' });
@@ -41,9 +104,13 @@ router.patch('/me/password', authenticate, async (req, res) => {
     
     // Hash and update new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    user.password = hashedPassword;
     
-    console.log('Password updated successfully for user:', user.email);
+    await sql`
+      UPDATE users 
+      SET password = ${hashedPassword}
+      WHERE id = ${req.user.userId}
+    `;
+    
     res.json({ message: 'Password updated successfully' });
   } catch (error) {
     console.error('Password change error:', error);
@@ -51,61 +118,42 @@ router.patch('/me/password', authenticate, async (req, res) => {
   }
 });
 
-// Get current user profile
-router.get('/me', authenticate, async (req, res) => {
-  try {
-    const user = users.find(u => u._id === req.user.userId);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    const { password, ...safeUser } = user;
-    res.json(safeUser);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Update user profile
-router.patch('/me', authenticate, async (req, res) => {
-  try {
-    const user = users.find(u => u._id === req.user.userId);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    // Update allowed fields
-    if (req.body.name) user.name = req.body.name;
-    if (req.body.phone) user.phone = req.body.phone;
-    if (req.body.branch) user.branch = req.body.branch;
-    if (req.body.college) user.college = req.body.college;
-    
-    // Allow admin to update email
-    if (req.body.email && user.role === 'admin') {
-      // Check if email is already taken by another user
-      const existingUser = users.find(u => u.email === req.body.email && u._id !== user._id);
-      if (existingUser) {
-        return res.status(400).json({ error: 'Email already in use' });
-      }
-      user.email = req.body.email;
-    }
-    
-    const { password, ...safeUser } = user;
-    res.json(safeUser);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
 // Get all users (admin only)
 router.get('/', authenticate, authorize('admin'), async (req, res) => {
   try {
-    const safeUsers = users.map(u => {
-      const { password, ...safe } = u;
-      return safe;
-    });
-    res.json(safeUsers);
+    const { role } = req.query;
+    
+    let users;
+    if (role && role !== 'all') {
+      users = await sql`
+        SELECT id, email, name, phone, branch, college, role, is_active, created_at
+        FROM users 
+        WHERE role = ${role}
+        ORDER BY created_at DESC
+      `;
+    } else {
+      users = await sql`
+        SELECT id, email, name, phone, branch, college, role, is_active, created_at
+        FROM users 
+        ORDER BY created_at DESC
+      `;
+    }
+    
+    const formattedUsers = users.map(u => ({
+      _id: u.id.toString(),
+      email: u.email,
+      name: u.name,
+      phone: u.phone,
+      branch: u.branch,
+      college: u.college,
+      role: u.role,
+      isActive: u.is_active,
+      createdAt: u.created_at
+    }));
+    
+    res.json(formattedUsers);
   } catch (error) {
+    console.error('Get users error:', error);
     res.status(400).json({ error: error.message });
   }
 });
@@ -113,62 +161,76 @@ router.get('/', authenticate, authorize('admin'), async (req, res) => {
 // Get user by ID (admin only)
 router.get('/:id', authenticate, authorize('admin'), async (req, res) => {
   try {
-    const user = users.find(u => u._id === req.params.id);
-    if (!user) {
+    const users = await sql`
+      SELECT id, email, name, phone, branch, college, role, is_active, created_at
+      FROM users 
+      WHERE id = ${req.params.id}
+    `;
+    
+    if (users.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
     
-    const { password, ...safeUser } = user;
-    res.json(safeUser);
+    const user = users[0];
+    res.json({
+      _id: user.id.toString(),
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      branch: user.branch,
+      college: user.college,
+      role: user.role,
+      isActive: user.is_active,
+      createdAt: user.created_at
+    });
   } catch (error) {
+    console.error('Get user error:', error);
     res.status(400).json({ error: error.message });
   }
 });
 
-// Update user role (admin only)
-router.patch('/:id/role', authenticate, authorize('admin'), async (req, res) => {
-  try {
-    const user = users.find(u => u._id === req.params.id);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    user.role = req.body.role;
-    const { password, ...safeUser } = user;
-    res.json(safeUser);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Ban/disable user (admin only)
+// Update user status (admin only)
 router.patch('/:id/status', authenticate, authorize('admin'), async (req, res) => {
   try {
-    const user = users.find(u => u._id === req.params.id);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+    const { isActive } = req.body;
     
-    user.isActive = req.body.isActive;
-    const { password, ...safeUser } = user;
-    res.json(safeUser);
+    await sql`
+      UPDATE users 
+      SET is_active = ${isActive}
+      WHERE id = ${req.params.id}
+    `;
+    
+    res.json({ message: 'User status updated successfully' });
   } catch (error) {
+    console.error('Update user status error:', error);
     res.status(400).json({ error: error.message });
   }
 });
 
-// Get user's project history (admin or own user)
-router.get('/:id/projects', authenticate, async (req, res) => {
+// Get user projects (admin only)
+router.get('/:id/projects', authenticate, authorize('admin'), async (req, res) => {
   try {
-    if (req.user.userId !== req.params.id && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Not authorized' });
-    }
+    const projects = await sql`
+      SELECT * FROM projects 
+      WHERE requester_id = ${req.params.id}
+      ORDER BY created_at DESC
+    `;
     
-    const { projects } = await import('../data/store.js');
-    const userProjects = projects.filter(p => p.requester === req.params.id);
+    const formattedProjects = projects.map(p => ({
+      _id: p.id.toString(),
+      title: p.title,
+      description: p.description,
+      category: p.category,
+      projectType: p.project_type,
+      budget: parseFloat(p.budget),
+      deadline: p.deadline,
+      status: p.status,
+      createdAt: p.created_at
+    }));
     
-    res.json(userProjects);
+    res.json(formattedProjects);
   } catch (error) {
+    console.error('Get user projects error:', error);
     res.status(400).json({ error: error.message });
   }
 });

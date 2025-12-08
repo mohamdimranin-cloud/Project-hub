@@ -1,32 +1,108 @@
 import express from 'express';
-import { projects, users, generateProjectId, createNotification } from '../data/store.js';
+import sql from '../config/database.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// Helper function to create notification
+async function createNotification(userId, message, type, projectId) {
+  try {
+    await sql`
+      INSERT INTO notifications (user_id, message, type, related_project_id, is_read)
+      VALUES (${userId}, ${message}, ${type}, ${projectId}, false)
+    `;
+  } catch (error) {
+    console.error('Failed to create notification:', error);
+  }
+}
 
 // Get all projects
 router.get('/', authenticate, async (req, res) => {
   try {
     const { status, category, projectType } = req.query;
-    let filteredProjects = [...projects];
     
-    if (status) filteredProjects = filteredProjects.filter(p => p.status === status);
-    if (category) filteredProjects = filteredProjects.filter(p => p.category === category);
-    if (projectType) filteredProjects = filteredProjects.filter(p => p.projectType === projectType);
+    let query = sql`
+      SELECT 
+        p.*,
+        json_build_object(
+          'id', u.id,
+          'name', u.name,
+          'email', u.email,
+          'phone', u.phone,
+          'branch', u.branch,
+          'college', u.college
+        ) as requester
+      FROM projects p
+      LEFT JOIN users u ON p.requester_id = u.id
+      WHERE 1=1
+    `;
     
+    // Add filters
     if (req.user.role === 'requester') {
-      filteredProjects = filteredProjects.filter(p => p.requester === req.user.userId);
+      query = sql`
+        SELECT 
+          p.*,
+          json_build_object(
+            'id', u.id,
+            'name', u.name,
+            'email', u.email,
+            'phone', u.phone,
+            'branch', u.branch,
+            'college', u.college
+          ) as requester
+        FROM projects p
+        LEFT JOIN users u ON p.requester_id = u.id
+        WHERE p.requester_id = ${req.user.userId}
+      `;
     }
     
-    // Populate user data
-    const populatedProjects = filteredProjects.map(p => ({
-      ...p,
-      requester: users.find(u => u._id === p.requester),
-      assignedDeveloper: p.assignedDeveloper ? users.find(u => u._id === p.assignedDeveloper) : null
+    let projects = await query;
+    
+    // Apply additional filters
+    if (status) projects = projects.filter(p => p.status === status);
+    if (category) projects = projects.filter(p => p.category === category);
+    if (projectType) projects = projects.filter(p => p.project_type === projectType);
+    
+    // Get progress updates for each project
+    for (let project of projects) {
+      const progressUpdates = await sql`
+        SELECT * FROM progress_updates 
+        WHERE project_id = ${project.id}
+        ORDER BY created_at DESC
+      `;
+      project.progressUpdates = progressUpdates.map(pu => ({
+        message: pu.message,
+        percentage: pu.percentage,
+        date: pu.created_at
+      }));
+    }
+    
+    // Format response
+    const formattedProjects = projects.map(p => ({
+      _id: p.id.toString(),
+      title: p.title,
+      description: p.description,
+      category: p.category,
+      projectType: p.project_type,
+      budget: parseFloat(p.budget),
+      deadline: p.deadline,
+      technologies: p.technologies || [],
+      phone: p.phone,
+      status: p.status,
+      requester: p.requester,
+      assignedDeveloper: p.assigned_developer_id,
+      estimatedDelivery: p.estimated_delivery,
+      acceptedAt: p.accepted_at,
+      completedAt: p.completed_at,
+      adminNotes: p.admin_notes,
+      progressUpdates: p.progressUpdates || [],
+      createdAt: p.created_at,
+      updatedAt: p.updated_at
     }));
     
-    res.json(populatedProjects);
+    res.json(formattedProjects);
   } catch (error) {
+    console.error('Get projects error:', error);
     res.status(400).json({ error: error.message });
   }
 });
@@ -34,269 +110,212 @@ router.get('/', authenticate, async (req, res) => {
 // Get single project
 router.get('/:id', authenticate, async (req, res) => {
   try {
-    const project = projects.find(p => p._id === req.params.id);
-    if (!project) {
+    const projects = await sql`
+      SELECT 
+        p.*,
+        json_build_object(
+          'id', u.id,
+          'name', u.name,
+          'email', u.email,
+          'phone', u.phone,
+          'branch', u.branch,
+          'college', u.college
+        ) as requester
+      FROM projects p
+      LEFT JOIN users u ON p.requester_id = u.id
+      WHERE p.id = ${req.params.id}
+    `;
+    
+    if (projects.length === 0) {
       return res.status(404).json({ error: 'Project not found' });
     }
     
-    const populated = {
-      ...project,
-      requester: users.find(u => u._id === project.requester),
-      assignedDeveloper: project.assignedDeveloper ? users.find(u => u._id === project.assignedDeveloper) : null
+    const project = projects[0];
+    
+    // Get progress updates
+    const progressUpdates = await sql`
+      SELECT * FROM progress_updates 
+      WHERE project_id = ${project.id}
+      ORDER BY created_at DESC
+    `;
+    
+    const formattedProject = {
+      _id: project.id.toString(),
+      title: project.title,
+      description: project.description,
+      category: project.category,
+      projectType: project.project_type,
+      budget: parseFloat(project.budget),
+      deadline: project.deadline,
+      technologies: project.technologies || [],
+      phone: project.phone,
+      status: project.status,
+      requester: project.requester,
+      assignedDeveloper: project.assigned_developer_id,
+      estimatedDelivery: project.estimated_delivery,
+      acceptedAt: project.accepted_at,
+      completedAt: project.completed_at,
+      adminNotes: project.admin_notes,
+      progressUpdates: progressUpdates.map(pu => ({
+        message: pu.message,
+        percentage: pu.percentage,
+        date: pu.created_at
+      })),
+      createdAt: project.created_at,
+      updatedAt: project.updated_at
     };
     
-    res.json(populated);
+    res.json(formattedProject);
   } catch (error) {
+    console.error('Get project error:', error);
     res.status(400).json({ error: error.message });
   }
 });
 
 // Create project
-router.post('/', authenticate, async (req, res) => {
+router.post('/', authenticate, authorize('requester', 'admin'), async (req, res) => {
   try {
-    const project = {
-      _id: generateProjectId(),
-      title: req.body.title,
-      description: req.body.description,
-      projectType: req.body.projectType || 'mini',
-      category: req.body.category,
-      technologies: req.body.technologies || [],
-      deadline: req.body.deadline ? new Date(req.body.deadline) : null,
-      budget: req.body.budget,
-      phone: req.body.phone || '',
-      uploads: req.body.uploads || [],
-      status: 'open',
-      requester: req.user.userId,
-      assignedDeveloper: null,
-      estimatedDelivery: null,
-      progressUpdates: [],
-      deliverables: [],
-      revisionRequests: [],
-      internalNotes: '',
-      createdAt: new Date()
-    };
+    const { title, description, category, projectType, budget, deadline, technologies, phone } = req.body;
     
-    projects.push(project);
+    const newProject = await sql`
+      INSERT INTO projects (
+        title, description, category, project_type, budget, deadline, 
+        technologies, phone, status, requester_id
+      )
+      VALUES (
+        ${title}, ${description}, ${category}, ${projectType}, ${budget}, ${deadline},
+        ${sql.array(technologies || [])}, ${phone || ''}, 'open', ${req.user.userId}
+      )
+      RETURNING *
+    `;
     
-    // Notify all admins
-    const admins = users.filter(u => u.role === 'admin');
-    admins.forEach(admin => {
-      createNotification(
-        admin._id,
-        `New project posted: ${project.title}`,
-        'project_posted',
-        project._id
+    const project = newProject[0];
+    
+    // Create notification for admins
+    const admins = await sql`SELECT id FROM users WHERE role = 'admin'`;
+    for (const admin of admins) {
+      await createNotification(
+        admin.id,
+        `New project submitted: ${title}`,
+        'new_project',
+        project.id
       );
-    });
+    }
     
-    res.status(201).json(project);
+    res.status(201).json({
+      _id: project.id.toString(),
+      ...project,
+      projectType: project.project_type
+    });
   } catch (error) {
+    console.error('Create project error:', error);
     res.status(400).json({ error: error.message });
   }
 });
 
-// Update project status (admin only)
+// Update project status
 router.patch('/:id/status', authenticate, authorize('admin'), async (req, res) => {
   try {
     console.log('Status update request:', { id: req.params.id, status: req.body.status });
     
-    const project = projects.find(p => p._id === req.params.id);
-    if (!project) {
+    const projects = await sql`
+      SELECT * FROM projects WHERE id = ${req.params.id}
+    `;
+    
+    if (projects.length === 0) {
       console.log('Project not found:', req.params.id);
       return res.status(404).json({ error: 'Project not found' });
     }
     
-    if (!req.body.status) {
+    const project = projects[0];
+    const oldStatus = project.status;
+    const newStatus = req.body.status;
+    
+    if (!newStatus) {
       console.log('No status provided in request body');
       return res.status(400).json({ error: 'Status is required' });
     }
     
-    const oldStatus = project.status;
-    project.status = req.body.status;
+    // Update project status
+    const updated = await sql`
+      UPDATE projects 
+      SET status = ${newStatus},
+          accepted_at = ${newStatus === 'accepted' ? sql`NOW()` : project.accepted_at},
+          completed_at = ${newStatus === 'completed' ? sql`NOW()` : project.completed_at}
+      WHERE id = ${req.params.id}
+      RETURNING *
+    `;
     
-    if (req.body.status === 'accepted') {
-      project.acceptedAt = new Date();
-    }
-    if (req.body.status === 'completed') {
-      project.completedAt = new Date();
-    }
-    
-    console.log('Status updated successfully:', { oldStatus, newStatus: project.status });
+    console.log('Status updated successfully:', { oldStatus, newStatus });
     
     // Notify requester
-    createNotification(
-      project.requester,
-      `Project "${project.title}" status updated: ${oldStatus} → ${req.body.status}`,
+    await createNotification(
+      project.requester_id,
+      `Project "${project.title}" status updated: ${oldStatus} → ${newStatus}`,
       'status_update',
-      project._id
+      project.id
     );
     
-    res.json(project);
+    res.json({
+      _id: updated[0].id.toString(),
+      ...updated[0],
+      projectType: updated[0].project_type
+    });
   } catch (error) {
     console.error('Status update error:', error);
     res.status(400).json({ error: error.message });
   }
 });
 
-// Assign developer (admin only)
-router.patch('/:id/assign', authenticate, authorize('admin'), async (req, res) => {
+// Add progress update
+router.post('/:id/progress', authenticate, authorize('admin'), async (req, res) => {
   try {
-    const project = projects.find(p => p._id === req.params.id);
-    if (!project) {
+    const { message } = req.body;
+    
+    const projects = await sql`
+      SELECT * FROM projects WHERE id = ${req.params.id}
+    `;
+    
+    if (projects.length === 0) {
       return res.status(404).json({ error: 'Project not found' });
     }
     
-    project.assignedDeveloper = req.body.developerId;
-    project.estimatedDelivery = req.body.estimatedDelivery ? new Date(req.body.estimatedDelivery) : null;
+    const project = projects[0];
     
-    // Notify developer
-    if (req.body.developerId) {
-      createNotification(
-        req.body.developerId,
-        `You have been assigned to project: ${project.title}`,
-        'assignment',
-        project._id
-      );
-    }
-    
-    res.json(project);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Add progress update (admin only)
-router.post('/:id/progress', authenticate, authorize('admin', 'builder'), async (req, res) => {
-  try {
-    const project = projects.find(p => p._id === req.params.id);
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
-    
-    const update = {
-      date: new Date(),
-      message: req.body.message,
-      updatedBy: req.user.userId
-    };
-    
-    project.progressUpdates.push(update);
+    await sql`
+      INSERT INTO progress_updates (project_id, message, percentage)
+      VALUES (${req.params.id}, ${message}, 0)
+    `;
     
     // Notify requester
-    createNotification(
-      project.requester,
-      `Progress update on "${project.title}": ${req.body.message}`,
+    await createNotification(
+      project.requester_id,
+      `New progress update on "${project.title}": ${message}`,
       'progress_update',
-      project._id
+      project.id
     );
     
-    res.json(project);
+    res.json({ message: 'Progress updated successfully' });
   } catch (error) {
+    console.error('Add progress error:', error);
     res.status(400).json({ error: error.message });
   }
 });
 
-// Upload deliverables (admin/builder)
-router.post('/:id/deliverables', authenticate, authorize('admin', 'builder'), async (req, res) => {
-  try {
-    const project = projects.find(p => p._id === req.params.id);
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
-    
-    const deliverable = {
-      type: req.body.type, // 'source', 'docs', 'ppt', 'video'
-      url: req.body.url,
-      description: req.body.description,
-      uploadedAt: new Date()
-    };
-    
-    project.deliverables.push(deliverable);
-    project.status = 'delivered';
-    
-    // Notify requester
-    createNotification(
-      project.requester,
-      `Deliverables uploaded for "${project.title}"`,
-      'delivery',
-      project._id
-    );
-    
-    res.json(project);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Request revision (requester)
-router.post('/:id/revision', authenticate, async (req, res) => {
-  try {
-    const project = projects.find(p => p._id === req.params.id);
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
-    
-    if (project.requester !== req.user.userId && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Not authorized' });
-    }
-    
-    const revision = {
-      requestedAt: new Date(),
-      reason: req.body.reason,
-      status: 'pending'
-    };
-    
-    project.revisionRequests.push(revision);
-    project.status = 'in-progress';
-    
-    // Notify admin
-    const admins = users.filter(u => u.role === 'admin');
-    admins.forEach(admin => {
-      createNotification(
-        admin._id,
-        `Revision requested for "${project.title}"`,
-        'revision_requested',
-        project._id
-      );
-    });
-    
-    res.json(project);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Mark as complete (requester)
-router.patch('/:id/complete', authenticate, async (req, res) => {
-  try {
-    const project = projects.find(p => p._id === req.params.id);
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
-    
-    if (project.requester !== req.user.userId && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Not authorized' });
-    }
-    
-    project.status = 'completed';
-    project.completedAt = new Date();
-    
-    res.json(project);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Update internal notes (admin only)
+// Update admin notes
 router.patch('/:id/notes', authenticate, authorize('admin'), async (req, res) => {
   try {
-    const project = projects.find(p => p._id === req.params.id);
-    if (!project) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
+    const { notes } = req.body;
     
-    project.internalNotes = req.body.notes;
-    res.json(project);
+    await sql`
+      UPDATE projects 
+      SET admin_notes = ${notes}
+      WHERE id = ${req.params.id}
+    `;
+    
+    res.json({ message: 'Notes updated successfully' });
   } catch (error) {
+    console.error('Update notes error:', error);
     res.status(400).json({ error: error.message });
   }
 });

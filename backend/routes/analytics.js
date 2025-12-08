@@ -1,102 +1,91 @@
 import express from 'express';
-import { projects, users } from '../data/store.js';
+import sql from '../config/database.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Get analytics dashboard (admin only)
 router.get('/', authenticate, authorize('admin'), async (req, res) => {
   try {
-    const totalProjects = projects.length;
-    const completedProjects = projects.filter(p => p.status === 'completed').length;
-    const pendingProjects = projects.filter(p => ['open', 'in-review', 'accepted', 'in-progress'].includes(p.status)).length;
-    const deliveredProjects = projects.filter(p => p.status === 'delivered').length;
+    // Get total counts
+    const projectCounts = await sql`
+      SELECT 
+        COUNT(*) as total,
+        COUNT(*) FILTER (WHERE status = 'open') as open,
+        COUNT(*) FILTER (WHERE status = 'in-progress') as in_progress,
+        COUNT(*) FILTER (WHERE status = 'completed') as completed,
+        COUNT(*) FILTER (WHERE status = 'rejected') as rejected
+      FROM projects
+    `;
     
-    // Revenue calculation
-    const revenue = projects
-      .filter(p => p.status === 'completed')
-      .reduce((sum, p) => sum + (p.budget || 0), 0);
+    const userCounts = await sql`
+      SELECT 
+        COUNT(*) as total,
+        COUNT(*) FILTER (WHERE role = 'requester') as requesters,
+        COUNT(*) FILTER (WHERE role = 'admin') as admins
+      FROM users
+    `;
     
-    // Category breakdown
-    const categoryStats = {};
-    projects.forEach(p => {
-      if (p.category) {
-        categoryStats[p.category] = (categoryStats[p.category] || 0) + 1;
-      }
-    });
+    // Get recent projects
+    const recentProjects = await sql`
+      SELECT 
+        p.*,
+        u.name as requester_name,
+        u.email as requester_email
+      FROM projects p
+      LEFT JOIN users u ON p.requester_id = u.id
+      ORDER BY p.created_at DESC
+      LIMIT 10
+    `;
     
-    // Project type breakdown
-    const typeStats = {
-      mini: projects.filter(p => p.projectType === 'mini').length,
-      major: projects.filter(p => p.projectType === 'major').length
-    };
+    // Get project stats by category
+    const categoryStats = await sql`
+      SELECT category, COUNT(*) as count
+      FROM projects
+      GROUP BY category
+      ORDER BY count DESC
+    `;
     
-    // User activity
-    const totalUsers = users.filter(u => u.role === 'requester').length;
-    const activeUsers = [...new Set(projects.map(p => p.requester))].length;
-    
-    // Developer performance
-    const developerStats = {};
-    projects.forEach(p => {
-      if (p.assignedDeveloper) {
-        if (!developerStats[p.assignedDeveloper]) {
-          const dev = users.find(u => u._id === p.assignedDeveloper);
-          developerStats[p.assignedDeveloper] = {
-            name: dev?.name || 'Unknown',
-            phone: dev?.phone || '',
-            total: 0,
-            completed: 0,
-            inProgress: 0
-          };
-        }
-        developerStats[p.assignedDeveloper].total++;
-        if (p.status === 'completed') {
-          developerStats[p.assignedDeveloper].completed++;
-        } else if (['in-progress', 'accepted'].includes(p.status)) {
-          developerStats[p.assignedDeveloper].inProgress++;
-        }
-      }
-    });
-    
-    // Recent activity
-    const recentProjects = projects
-      .sort((a, b) => b.createdAt - a.createdAt)
-      .slice(0, 10);
-    
-    // Monthly project creation data (last 6 months)
-    const monthlyData = {};
-    const now = new Date();
-    for (let i = 5; i >= 0; i--) {
-      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-      monthlyData[monthKey] = 0;
-    }
-    
-    projects.forEach(p => {
-      const projectDate = new Date(p.createdAt);
-      const monthKey = projectDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-      if (monthlyData.hasOwnProperty(monthKey)) {
-        monthlyData[monthKey]++;
-      }
-    });
+    // Get project stats by type
+    const typeStats = await sql`
+      SELECT project_type, COUNT(*) as count
+      FROM projects
+      GROUP BY project_type
+    `;
     
     res.json({
-      overview: {
-        totalProjects,
-        completedProjects,
-        pendingProjects,
-        deliveredProjects,
-        revenue,
-        totalUsers,
-        activeUsers
+      projects: {
+        total: parseInt(projectCounts[0].total),
+        open: parseInt(projectCounts[0].open),
+        inProgress: parseInt(projectCounts[0].in_progress),
+        completed: parseInt(projectCounts[0].completed),
+        rejected: parseInt(projectCounts[0].rejected)
       },
-      categoryStats,
-      typeStats,
-      monthlyData,
-      developerStats: Object.values(developerStats),
-      recentProjects
+      users: {
+        total: parseInt(userCounts[0].total),
+        requesters: parseInt(userCounts[0].requesters),
+        admins: parseInt(userCounts[0].admins)
+      },
+      recentProjects: recentProjects.map(p => ({
+        _id: p.id.toString(),
+        title: p.title,
+        status: p.status,
+        category: p.category,
+        projectType: p.project_type,
+        requesterName: p.requester_name,
+        requesterEmail: p.requester_email,
+        createdAt: p.created_at
+      })),
+      categoryStats: categoryStats.map(c => ({
+        category: c.category,
+        count: parseInt(c.count)
+      })),
+      typeStats: typeStats.map(t => ({
+        type: t.project_type,
+        count: parseInt(t.count)
+      }))
     });
   } catch (error) {
+    console.error('Analytics error:', error);
     res.status(400).json({ error: error.message });
   }
 });
