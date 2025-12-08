@@ -11,6 +11,8 @@ function AdminProjectManagement({ onLogout }) {
   const [progressData, setProgressData] = useState({ percentage: 0, message: '' });
   const [completeModal, setCompleteModal] = useState(null);
   const [completeData, setCompleteData] = useState({ sourceCodeLink: '', deliveryNotes: '' });
+  const [rejectModal, setRejectModal] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   useEffect(() => {
     loadProjects();
@@ -58,6 +60,24 @@ function AdminProjectManagement({ onLogout }) {
       loadProjects();
     } catch (error) {
       alert('Failed to complete project');
+    }
+  };
+
+  const handleRejectProject = async () => {
+    if (!rejectReason.trim()) {
+      alert('Please enter a reason for rejection');
+      return;
+    }
+    try {
+      await projects.updateStatus(rejectModal._id, 'rejected');
+      // Add rejection reason as a progress update
+      await projects.addProgress(rejectModal._id, `Project rejected: ${rejectReason}`);
+      alert('❌ Project rejected');
+      setRejectModal(null);
+      setRejectReason('');
+      loadProjects();
+    } catch (error) {
+      alert('Failed to reject project');
     }
   };
 
@@ -279,13 +299,22 @@ function AdminProjectManagement({ onLogout }) {
               </button>
 
               {project.status === 'open' && (
-                <button 
-                  onClick={() => handleStatusChange(project._id, 'in-progress')} 
-                  className="btn btn-primary"
-                  style={{ background: '#17a2b8', borderColor: '#17a2b8' }}
-                >
-                  Start Project
-                </button>
+                <>
+                  <button 
+                    onClick={() => handleStatusChange(project._id, 'in-progress')} 
+                    className="btn btn-primary"
+                    style={{ background: '#17a2b8', borderColor: '#17a2b8' }}
+                  >
+                    Start Project
+                  </button>
+                  <button 
+                    onClick={() => setRejectModal(project)} 
+                    className="btn btn-primary"
+                    style={{ background: '#dc3545', borderColor: '#dc3545' }}
+                  >
+                    Reject Project
+                  </button>
+                </>
               )}
 
               {project.status === 'in-progress' && (
@@ -395,6 +424,61 @@ function AdminProjectManagement({ onLogout }) {
               <button onClick={() => {
                 setCompleteModal(null);
                 setCompleteData({ sourceCodeLink: '', deliveryNotes: '' });
+              }} className="btn btn-secondary" style={{ flex: 1 }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Project Modal */}
+      {rejectModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div className="card" style={{ maxWidth: '500px', width: '90%', maxHeight: '90vh', overflow: 'auto' }}>
+            <h2 style={{ color: '#dc3545' }}>Reject Project</h2>
+            <p><strong>Project:</strong> {rejectModal.title}</p>
+            
+            <div className="form-group">
+              <label>Reason for Rejection *</label>
+              <textarea
+                rows="6"
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="Please provide a clear reason for rejecting this project. This will be visible to the student.&#10;&#10;Examples:&#10;• Requirements are not clear enough&#10;• Project scope is too broad&#10;• Budget is insufficient for the requirements&#10;• Technology stack is not supported"
+                required
+                style={{ lineHeight: '1.6' }}
+              />
+              <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem' }}>
+                The student will be notified with this reason
+              </div>
+            </div>
+
+            <div className="info-box" style={{ background: '#fff3cd', border: '1px solid #ffc107', padding: '1rem', borderRadius: '6px', marginBottom: '1rem' }}>
+              <div style={{ fontWeight: '600', marginBottom: '0.5rem', color: '#856404' }}>⚠️ Important</div>
+              <div style={{ fontSize: '0.9rem', color: '#856404' }}>
+                Rejecting this project will notify the student. They can revise and resubmit their project requirements.
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button onClick={handleRejectProject} className="btn btn-primary" style={{ flex: 1, background: '#dc3545', borderColor: '#dc3545' }}>
+                ❌ Reject Project
+              </button>
+              <button onClick={() => {
+                setRejectModal(null);
+                setRejectReason('');
               }} className="btn btn-secondary" style={{ flex: 1 }}>
                 Cancel
               </button>
