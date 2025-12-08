@@ -37,7 +37,7 @@ function LandingPage() {
               Login
             </button>
             <button 
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/signup')}
               style={{
                 background: 'white',
                 color: '#667eea',
@@ -84,7 +84,7 @@ function LandingPage() {
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <button 
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/signup')}
               style={{
                 background: 'white',
                 color: '#667eea',
@@ -313,7 +313,7 @@ function LandingPage() {
             Submit your requirement today and get your complete project delivered without stress.
           </p>
           <button 
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/signup')}
             style={{
               background: 'white',
               color: '#667eea',

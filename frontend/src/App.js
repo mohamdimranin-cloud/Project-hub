@@ -49,6 +49,7 @@ function App() {
       {user && user.role !== 'admin' && <Navbar user={user} onLogout={handleLogout} />}
       <Routes>
         <Route path="/login" element={!user ? <Login onLogin={handleLogin} /> : user.role === 'admin' ? <Navigate to="/admin/dashboard" /> : <Navigate to="/student/dashboard" />} />
+        <Route path="/signup" element={!user ? <Login onLogin={handleLogin} isSignup={true} /> : user.role === 'admin' ? <Navigate to="/admin/dashboard" /> : <Navigate to="/student/dashboard" />} />
         
         {/* Student Routes */}
         <Route path="/student/dashboard" element={

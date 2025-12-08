@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { auth } from '../api';
 import logo from '../images/logo.png';
 
-function Login({ onLogin }) {
-  const [isRegister, setIsRegister] = useState(false);
+function Login({ onLogin, isSignup = false }) {
+  const [isRegister, setIsRegister] = useState(isSignup);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({ 
     email: '', 
