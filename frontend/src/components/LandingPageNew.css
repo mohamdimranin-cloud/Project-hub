@@ -246,7 +246,7 @@
 
 .stat-label {
   font-size: 12px;
-  color: #666;
+  color: #555;
   margin-top: 4px;
 }
 
@@ -322,7 +322,7 @@
 
 .step-description {
   font-size: 14px;
-  color: #666;
+  color: #333;
   line-height: 1.5;
 }
 
@@ -372,7 +372,7 @@
 
 .feature-description {
   font-size: 15px;
-  color: #666;
+  color: #333;
   line-height: 1.6;
 }
 
@@ -418,7 +418,7 @@
 
 .audience-description {
   font-size: 15px;
-  color: #666;
+  color: #333;
 }
 
 /* Trust Section */
@@ -494,7 +494,7 @@
 .testimonial-text {
   font-size: 16px;
   line-height: 1.6;
-  color: #333;
+  color: #1a1a1a;
   margin-bottom: 24px;
   font-style: italic;
 }
@@ -525,7 +525,7 @@
 
 .author-role {
   font-size: 14px;
-  color: #666;
+  color: #555;
 }
 
 /* Final CTA Section */

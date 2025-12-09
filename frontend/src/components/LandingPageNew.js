@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LandingPageNew.css';
+import logo from '../images/logo.png';
 
 const LandingPageNew = () => {
   const navigate = useNavigate();
@@ -10,8 +11,15 @@ const LandingPageNew = () => {
       {/* Top Navigation Bar */}
       <nav className="landing-nav">
         <div className="landing-nav-content">
-          <div className="landing-logo">
-            <span style={{ fontSize: '24px', fontWeight: '700', color: 'white' }}>PROJECT<span style={{ color: '#FFD700' }}>HUB</span></span>
+          <div className="landing-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+            <img 
+              src={logo} 
+              alt="ProjectHub Logo" 
+              style={{ 
+                height: '45px', 
+                width: 'auto'
+              }} 
+            />
           </div>
           <div className="landing-nav-buttons">
             <button className="nav-btn-login" onClick={() => navigate('/login')}>
