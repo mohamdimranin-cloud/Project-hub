@@ -83,8 +83,18 @@ function Navbar({ user, onLogout }) {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <Link to={`${baseUrl}/profile`} style={{ textDecoration: 'none', color: '#333' }}>
-            {user.name} ({user.role})
+          <Link 
+            to={`${baseUrl}/profile`} 
+            style={{ 
+              textDecoration: 'none', 
+              color: '#333',
+              fontWeight: '500',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            👤 Profile
           </Link>
           <button onClick={onLogout} className="btn btn-secondary">Logout</button>
         </div>

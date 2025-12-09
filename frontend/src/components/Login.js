@@ -5,6 +5,7 @@ import logo from '../images/logo.png';
 function Login({ onLogin, isSignup = false }) {
   const [isRegister, setIsRegister] = useState(isSignup);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ 
     email: '', 
     password: '', 
@@ -125,14 +126,39 @@ function Login({ onLogin, isSignup = false }) {
             
             <div className="form-group">
               <label>🔒 Password *</label>
-              <input 
-                type="password" 
-                value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
-                placeholder={isRegister ? "Create a strong password" : "Enter your password"}
-                required
-                minLength={isRegister ? 6 : undefined}
-              />
+              <div style={{ position: 'relative' }}>
+                <input 
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password}
+                  onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  placeholder={isRegister ? "Create a strong password" : "Enter your password"}
+                  required
+                  minLength={isRegister ? 6 : undefined}
+                  style={{ paddingRight: '45px' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '1.2rem',
+                    padding: '4px 8px',
+                    color: '#666',
+                    transition: 'color 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.target.style.color = '#333'}
+                  onMouseLeave={(e) => e.target.style.color = '#666'}
+                  title={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
               {isRegister && (
                 <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem' }}>
                   Password must be at least 6 characters

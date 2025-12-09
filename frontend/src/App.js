@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import LandingPage from './components/LandingPage';
+import LandingPageNew from './components/LandingPageNew';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import ProjectList from './components/ProjectList';
@@ -149,7 +149,7 @@ function App() {
           user ? (
             user.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/student/dashboard" replace />
           ) : (
-            <LandingPage />
+            <LandingPageNew />
           )
         } />
         
