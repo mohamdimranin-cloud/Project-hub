@@ -159,9 +159,27 @@ function Login({ onLogin, isSignup = false }) {
                   {showPassword ? '🙈' : '👁️'}
                 </button>
               </div>
-              {isRegister && (
+              {isRegister ? (
                 <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem' }}>
                   Password must be at least 6 characters
+                </div>
+              ) : (
+                <div style={{ textAlign: 'right', marginTop: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => alert('Please contact admin to reset your password')}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#667eea',
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      padding: '0'
+                    }}
+                  >
+                    Forgot Password?
+                  </button>
                 </div>
               )}
             </div>
