@@ -1,6 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import session from 'express-session';
+import passport from './config/passport.js';
+import { setupPassport } from './config/passport.js';
 import authRoutes from './routes/auth.js';
 import projectRoutes from './routes/projects.js';
 import userRoutes from './routes/users.js';
@@ -12,6 +15,19 @@ import { testConnection } from './config/database.js';
 dotenv.config();
 
 const app = express();
+
+// Session configuration (required for Passport)
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: process.env.NODE_ENV === 'production' }
+}));
+
+// Initialize Passport
+setupPassport();
+app.use(passport.initialize());
+app.use(passport.session());
 
 // CORS configuration for production
 const corsOptions = {

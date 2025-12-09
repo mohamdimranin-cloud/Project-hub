@@ -2,8 +2,46 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import sql from '../config/database.js';
+import passport from '../config/passport.js';
 
 const router = express.Router();
+
+// Google OAuth - Initiate authentication
+router.get('/google', 
+  passport.authenticate('google', { 
+    scope: ['profile', 'email'],
+    session: false 
+  })
+);
+
+// Google OAuth - Callback
+router.get('/google/callback',
+  passport.authenticate('google', { 
+    session: false,
+    failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=auth_failed`
+  }),
+  (req, res) => {
+    try {
+      // Generate JWT token
+      const token = jwt.sign(
+        { userId: req.user.id, role: req.user.role },
+        process.env.JWT_SECRET
+      );
+      
+      // Redirect to frontend with token
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      res.redirect(`${frontendUrl}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
+        id: req.user.id,
+        email: req.user.email,
+        name: req.user.name,
+        role: req.user.role
+      }))}`);
+    } catch (error) {
+      console.error('OAuth callback error:', error);
+      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=callback_failed`);
+    }
+  }
+);
 
 router.post('/register', async (req, res) => {
   try {

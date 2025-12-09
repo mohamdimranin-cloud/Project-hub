@@ -18,6 +18,7 @@ import Navbar from './components/Navbar';
 import TermsAndConditions from './components/TermsAndConditions';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import Chatbot from './components/Chatbot';
+import AuthCallback from './components/AuthCallback';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -141,6 +142,7 @@ function App() {
         {/* Public Pages */}
         <Route path="/terms" element={<TermsAndConditions />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/auth/callback" element={<AuthCallback onLogin={handleLogin} />} />
 
         {/* Landing Page and Root Route */}
         <Route path="/" element={
