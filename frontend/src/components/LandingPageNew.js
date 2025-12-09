@@ -7,6 +7,23 @@ const LandingPageNew = () => {
 
   return (
     <div className="landing-new">
+      {/* Top Navigation Bar */}
+      <nav className="landing-nav">
+        <div className="landing-nav-content">
+          <div className="landing-logo">
+            <span style={{ fontSize: '24px', fontWeight: '700', color: 'white' }}>PROJECT<span style={{ color: '#FFD700' }}>HUB</span></span>
+          </div>
+          <div className="landing-nav-buttons">
+            <button className="nav-btn-login" onClick={() => navigate('/login')}>
+              Login
+            </button>
+            <button className="nav-btn-signup" onClick={() => navigate('/signup')}>
+              Sign Up
+            </button>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-container">
@@ -255,14 +272,14 @@ const LandingPageNew = () => {
       <footer className="footer">
         <div className="footer-content">
           <div className="footer-links">
-            <a href="/about">About</a>
             <a href="#how-it-works">How It Works</a>
-            <a href="/contact">Contact</a>
-            <a href="/privacy">Privacy Policy</a>
+            <a href="/login">Login</a>
+            <a href="/signup">Sign Up</a>
             <a href="/terms">Terms & Conditions</a>
+            <a href="/privacy">Privacy Policy</a>
           </div>
           <div className="footer-copyright">
-            © 2024 Project Management Platform. All rights reserved.
+            © 2024 ProjectHub. All rights reserved.
           </div>
         </div>
       </footer>
