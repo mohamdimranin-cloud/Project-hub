@@ -247,8 +247,8 @@ function Login({ onLogin, isSignup = false }) {
         <div style={{ 
           marginTop: '2rem', 
           textAlign: 'center', 
-          color: 'white',
-          textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+          color: '#2C3E50',
+          fontWeight: '500'
         }}>
           <p style={{ fontSize: '0.9rem' }}>
             🔒 Your data is secure and encrypted
