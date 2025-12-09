@@ -36,41 +36,54 @@ function Login({ onLogin, isSignup = false }) {
       display: 'flex', 
       alignItems: 'center', 
       justifyContent: 'center',
-      padding: '20px'
+      padding: '20px',
+      background: '#F8F9FA'
     }}>
-      <div style={{ maxWidth: '500px', width: '100%' }}>
+      <div style={{ maxWidth: '480px', width: '100%' }}>
         {/* Logo/Header */}
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <img 
             src={logo} 
             alt="ProjectHub Logo" 
             style={{ 
-              width: '200px', 
+              width: '180px', 
               height: 'auto', 
-              marginBottom: '1rem',
-              filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))'
+              marginBottom: '1.5rem'
             }} 
           />
-          <p style={{ color: 'white', fontSize: '1.2rem', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-            Connect students with developers
+          <h1 style={{ 
+            fontSize: '1.75rem', 
+            color: '#2C3E50', 
+            marginBottom: '0.5rem',
+            fontWeight: '700'
+          }}>
+            {isRegister ? 'Create Your Account' : 'Welcome Back'}
+          </h1>
+          <p style={{ color: '#7F8C8D', fontSize: '1rem' }}>
+            {isRegister 
+              ? 'Join thousands of students getting projects done' 
+              : 'Sign in to manage your projects'
+            }
           </p>
         </div>
 
-        <div className="card" style={{ boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }}>
-          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <h2 style={{ 
-              fontSize: '2rem',
-              color: '#333',
-              marginBottom: '0.5rem'
+        <div className="card" style={{ 
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          border: '1px solid #E8E8E8',
+          borderRadius: '16px'
+        }}>
+          <div style={{ marginBottom: '2rem' }}>
+            <div style={{ 
+              display: 'inline-block',
+              padding: '8px 16px',
+              background: '#F0F4F8',
+              borderRadius: '8px',
+              marginBottom: '1rem'
             }}>
-              {isRegister ? '📝 Create Account' : '🔐 Welcome Back'}
-            </h2>
-            <p style={{ color: '#666' }}>
-              {isRegister 
-                ? 'Fill in your details to get started' 
-                : 'Sign in to continue to your account'
-              }
-            </p>
+              <span style={{ fontSize: '0.875rem', color: '#2C3E50', fontWeight: '600' }}>
+                {isRegister ? 'STEP 1 OF 1' : 'LOGIN'}
+              </span>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit}>
