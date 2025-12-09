@@ -5,19 +5,6 @@ import sql from '../config/database.js';
 
 const router = express.Router();
 
-// Google OAuth endpoints (simplified - requires Google OAuth setup)
-router.get('/google', (req, res) => {
-  // For now, redirect to regular login with a message
-  // To implement: Set up Google OAuth 2.0 credentials and use passport-google-oauth20
-  res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?message=Google login coming soon! Please use email login.`);
-});
-
-router.get('/google/callback', async (req, res) => {
-  // Google OAuth callback handler
-  // This would handle the OAuth response from Google
-  res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login`);
-});
-
 router.post('/register', async (req, res) => {
   try {
     const { email, password, name, phone, branch, college, role } = req.body;
