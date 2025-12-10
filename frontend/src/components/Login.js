@@ -248,7 +248,9 @@ function Login({ onLogin, isSignup = false }) {
             <button
               type="button"
               onClick={() => {
-                window.location.href = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/google`;
+                const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+                const apiUrl = baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
+                window.location.href = `${apiUrl}/auth/google`;
               }}
               style={{
                 width: '100%',
