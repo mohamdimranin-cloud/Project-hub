@@ -19,6 +19,7 @@ import TermsAndConditions from './components/TermsAndConditions';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import Chatbot from './components/Chatbot';
 import AuthCallback from './components/AuthCallback';
+import CompleteProfile from './components/CompleteProfile';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -143,6 +144,7 @@ function App() {
         <Route path="/terms" element={<TermsAndConditions />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/auth/callback" element={<AuthCallback onLogin={handleLogin} />} />
+        <Route path="/complete-profile" element={<CompleteProfile />} />
 
         {/* Landing Page and Root Route */}
         <Route path="/" element={

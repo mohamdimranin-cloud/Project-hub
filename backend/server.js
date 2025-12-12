@@ -5,8 +5,10 @@ import session from 'express-session';
 import passport from './config/passport.js';
 import { setupPassport } from './config/passport.js';
 import authRoutes from './routes/auth.js';
+import googleAuthRoutes from './routes/googleAuth.js';
 import projectRoutes from './routes/projects.js';
 import userRoutes from './routes/users.js';
+import profileRoutes from './routes/profile.js';
 import notificationRoutes from './routes/notifications.js';
 import analyticsRoutes from './routes/analytics.js';
 import settingsRoutes from './routes/settings.js';
@@ -46,8 +48,10 @@ app.get('/', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', googleAuthRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/profile', profileRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/settings', settingsRoutes);

@@ -8,8 +8,13 @@ function Dashboard({ user }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check if profile is completed
+    if (user && user.profile_completed === false) {
+      navigate('/complete-profile');
+      return;
+    }
     loadStats();
-  }, []);
+  }, [user, navigate]);
 
   const loadStats = async () => {
     try {

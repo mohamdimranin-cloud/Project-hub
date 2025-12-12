@@ -50,9 +50,9 @@ export function setupPassport() {
             return done(null, updatedUser[0]);
           }
 
-          // Create new user
+          // Create new user with profile_completed = false
           const newUser = await sql`
-            INSERT INTO users (email, name, google_id, role, phone, branch, college, is_active)
+            INSERT INTO users (email, name, google_id, role, phone, branch, college, is_active, profile_completed)
             VALUES (
               ${profile.emails[0].value},
               ${profile.displayName},
@@ -61,7 +61,8 @@ export function setupPassport() {
               '',
               '',
               '',
-              true
+              true,
+              false
             )
             RETURNING *
           `;

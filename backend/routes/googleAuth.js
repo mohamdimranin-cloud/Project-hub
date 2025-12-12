@@ -1,6 +1,6 @@
-const express = require('express');
-const passport = require('../config/passport');
-const jwt = require('jsonwebtoken');
+import express from 'express';
+import passport from '../config/passport.js';
+import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
@@ -32,15 +32,25 @@ router.get(
         { expiresIn: '7d' }
       );
 
-      // Redirect to frontend with token
-      res.redirect(
-        `${process.env.FRONTEND_URL}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
-          id: req.user.id,
-          email: req.user.email,
-          name: req.user.name,
-          role: req.user.role
-        }))}`
-      );
+      // Check if profile is completed
+      const redirectUrl = req.user.profile_completed 
+        ? `${process.env.FRONTEND_URL}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
+            id: req.user.id,
+            email: req.user.email,
+            name: req.user.name,
+            role: req.user.role,
+            profile_completed: req.user.profile_completed
+          }))}`
+        : `${process.env.FRONTEND_URL}/complete-profile?token=${token}&user=${encodeURIComponent(JSON.stringify({
+            id: req.user.id,
+            email: req.user.email,
+            name: req.user.name,
+            role: req.user.role,
+            profile_completed: req.user.profile_completed
+          }))}`;
+
+      // Redirect to frontend
+      res.redirect(redirectUrl);
     } catch (error) {
       console.error('Google OAuth callback error:', error);
       res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
@@ -48,4 +58,4 @@ router.get(
   }
 );
 
-module.exports = router;
+export default router;
