@@ -24,7 +24,7 @@ router.get(
       // Generate JWT token
       const token = jwt.sign(
         { 
-          id: req.user.id, 
+          userId: req.user.id, 
           email: req.user.email, 
           role: req.user.role 
         },

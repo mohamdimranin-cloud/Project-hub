@@ -1,14 +1,14 @@
 import express from 'express';
 import sql from '../config/database.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // Complete user profile
-router.post('/complete', authenticateToken, async (req, res) => {
+router.post('/complete', authenticate, async (req, res) => {
   try {
     const { name, college, branch, phone } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     // Validate required fields
     if (!name || !college || !branch || !phone) {
@@ -64,9 +64,9 @@ router.post('/complete', authenticateToken, async (req, res) => {
 });
 
 // Get user profile
-router.get('/me', authenticateToken, async (req, res) => {
+router.get('/me', authenticate, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     const user = await sql`
       SELECT id, email, name, college, branch, phone, role, profile_completed, created_at
@@ -96,10 +96,10 @@ router.get('/me', authenticateToken, async (req, res) => {
 });
 
 // Update user profile
-router.put('/update', authenticateToken, async (req, res) => {
+router.put('/update', authenticate, async (req, res) => {
   try {
     const { name, college, branch, phone } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     // Validate required fields
     if (!name || !college || !branch || !phone) {
