@@ -21,25 +21,27 @@ router.get('/', authenticate, async (req, res) => {
   try {
     const { status, category, projectType } = req.query;
     
-    let query = sql`
-      SELECT 
-        p.*,
-        json_build_object(
-          'id', u.id,
-          'name', u.name,
-          'email', u.email,
-          'phone', u.phone,
-          'branch', u.branch,
-          'college', u.college
-        ) as requester
-      FROM projects p
-      LEFT JOIN users u ON p.requester_id = u.id
-      WHERE 1=1
-    `;
+    let projects;
     
-    // Add filters
-    if (req.user.role === 'requester') {
-      query = sql`
+    // Admin sees all projects, requester sees only their own
+    if (req.user.role === 'admin') {
+      projects = await sql`
+        SELECT 
+          p.*,
+          json_build_object(
+            'id', u.id,
+            'name', u.name,
+            'email', u.email,
+            'phone', u.phone,
+            'branch', u.branch,
+            'college', u.college
+          ) as requester
+        FROM projects p
+        LEFT JOIN users u ON p.requester_id = u.id
+        ORDER BY p.created_at DESC
+      `;
+    } else {
+      projects = await sql`
         SELECT 
           p.*,
           json_build_object(
@@ -53,10 +55,9 @@ router.get('/', authenticate, async (req, res) => {
         FROM projects p
         LEFT JOIN users u ON p.requester_id = u.id
         WHERE p.requester_id = ${req.user.userId}
+        ORDER BY p.created_at DESC
       `;
     }
-    
-    let projects = await query;
     
     // Apply additional filters
     if (status) projects = projects.filter(p => p.status === status);
