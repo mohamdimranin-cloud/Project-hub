@@ -1,6 +1,6 @@
+import './config/env.js';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import session from 'express-session';
 import passport from './config/passport.js';
 import { setupPassport } from './config/passport.js';
@@ -13,8 +13,6 @@ import notificationRoutes from './routes/notifications.js';
 import analyticsRoutes from './routes/analytics.js';
 import settingsRoutes from './routes/settings.js';
 import { testConnection } from './config/database.js';
-
-dotenv.config();
 
 const app = express();
 
