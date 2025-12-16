@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
 
 const CompleteProfile = () => {
   const [searchParams] = useSearchParams();
@@ -14,31 +13,26 @@ const CompleteProfile = () => {
   });
 
   useEffect(() => {
-    // Get user data from URL params
     const token = searchParams.get('token');
     const userParam = searchParams.get('user');
     
     if (!token || !userParam) {
-      toast.error('Invalid access. Please login again.');
+      alert('Invalid access. Please login again.');
       navigate('/login');
       return;
     }
 
     try {
       const userData = JSON.parse(decodeURIComponent(userParam));
-      
-      // Store token in localStorage
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(userData));
-      
-      // Pre-fill name if available
       setFormData(prev => ({
         ...prev,
         name: userData.name || ''
       }));
     } catch (error) {
       console.error('Error parsing user data:', error);
-      toast.error('Invalid user data. Please login again.');
+      alert('Invalid user data. Please login again.');
       navigate('/login');
     }
   }, [searchParams, navigate]);
@@ -57,14 +51,9 @@ const CompleteProfile = () => {
 
     try {
       const token = localStorage.getItem('token');
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
       
-      if (!token) {
-        toast.error('Authentication required. Please login again.');
-        navigate('/login');
-        return;
-      }
-
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/profile/complete`, {
+      const response = await fetch(`${apiUrl}/profile/complete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,22 +65,22 @@ const CompleteProfile = () => {
       const data = await response.json();
 
       if (data.success) {
-        // Update user data in localStorage
-        localStorage.setItem('user', JSON.stringify({
+        const updatedUser = {
           ...JSON.parse(localStorage.getItem('user')),
           ...data.user,
           profile_completed: true
-        }));
-
-        toast.success('Profile completed successfully!');
-        navigate('/dashboard');
+        };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        
+        // Force page reload to update App state
+        window.location.href = '/student/dashboard';
       } else {
-        toast.error(data.message || 'Failed to complete profile');
+        alert(data.message || 'Failed to complete profile');
+        setLoading(false);
       }
     } catch (error) {
       console.error('Profile completion error:', error);
-      toast.error('Failed to complete profile. Please try again.');
-    } finally {
+      alert('Failed to complete profile. Please try again.');
       setLoading(false);
     }
   };
@@ -99,145 +88,270 @@ const CompleteProfile = () => {
   const branches = [
     'Computer Science Engineering',
     'Information Technology',
-    'Electronics and Communication Engineering',
+    'Electronics and Communication',
     'Electrical Engineering',
     'Mechanical Engineering',
     'Civil Engineering',
     'Chemical Engineering',
     'Biotechnology',
     'Aerospace Engineering',
-    'Automobile Engineering',
     'Other'
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px'
+    }}>
+      <div style={{
+        background: 'rgba(255, 255, 255, 0.95)',
+        borderRadius: '20px',
+        padding: '40px',
+        width: '100%',
+        maxWidth: '450px',
+        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)'
+      }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+          <div style={{
+            width: '70px',
+            height: '70px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 15px',
+            fontSize: '30px'
+          }}>
+            👤
+          </div>
+          <h2 style={{
+            margin: '0 0 8px 0',
+            fontSize: '24px',
+            fontWeight: '700',
+            color: '#1a1a2e'
+          }}>
             Complete Your Profile
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p style={{
+            margin: 0,
+            color: '#666',
+            fontSize: '14px'
+          }}>
             Please provide your details to continue
           </p>
         </div>
-      </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full Name *
-              </label>
-              <div className="mt-1">
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Enter your full name"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="college" className="block text-sm font-medium text-gray-700">
-                College/University Name *
-              </label>
-              <div className="mt-1">
-                <input
-                  id="college"
-                  name="college"
-                  type="text"
-                  required
-                  value={formData.college}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Enter your college/university name"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
-                Branch/Department *
-              </label>
-              <div className="mt-1">
-                <select
-                  id="branch"
-                  name="branch"
-                  required
-                  value={formData.branch}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                >
-                  <option value="">Select your branch</option>
-                  {branches.map((branch) => (
-                    <option key={branch} value={branch}>
-                      {branch}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                Contact Number *
-              </label>
-              <div className="mt-1">
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  required
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Enter your contact number"
-                />
-              </div>
-              <p className="mt-1 text-xs text-gray-500">
-                Include country code (e.g., +91 for India)
-              </p>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Completing Profile...
-                  </div>
-                ) : (
-                  'Complete Profile'
-                )}
-              </button>
-            </div>
-          </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
-                  All fields are required
-                </span>
-              </div>
-            </div>
+        {/* Form */}
+        <form onSubmit={handleSubmit}>
+          {/* Full Name */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontWeight: '600',
+              color: '#333',
+              fontSize: '14px'
+            }}>
+              Full Name <span style={{ color: '#e74c3c' }}>*</span>
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              placeholder="Enter your full name"
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                border: '2px solid #e0e0e0',
+                borderRadius: '10px',
+                fontSize: '15px',
+                transition: 'border-color 0.3s',
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#667eea'}
+              onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
+            />
           </div>
-        </div>
+
+          {/* College */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontWeight: '600',
+              color: '#333',
+              fontSize: '14px'
+            }}>
+              College/University <span style={{ color: '#e74c3c' }}>*</span>
+            </label>
+            <input
+              type="text"
+              name="college"
+              value={formData.college}
+              onChange={handleChange}
+              required
+              placeholder="Enter your college name"
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                border: '2px solid #e0e0e0',
+                borderRadius: '10px',
+                fontSize: '15px',
+                transition: 'border-color 0.3s',
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#667eea'}
+              onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
+            />
+          </div>
+
+          {/* Branch */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontWeight: '600',
+              color: '#333',
+              fontSize: '14px'
+            }}>
+              Branch/Department <span style={{ color: '#e74c3c' }}>*</span>
+            </label>
+            <select
+              name="branch"
+              value={formData.branch}
+              onChange={handleChange}
+              required
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                border: '2px solid #e0e0e0',
+                borderRadius: '10px',
+                fontSize: '15px',
+                transition: 'border-color 0.3s',
+                outline: 'none',
+                boxSizing: 'border-box',
+                background: 'white',
+                cursor: 'pointer'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#667eea'}
+              onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
+            >
+              <option value="">Select your branch</option>
+              {branches.map((branch) => (
+                <option key={branch} value={branch}>{branch}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Phone */}
+          <div style={{ marginBottom: '25px' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontWeight: '600',
+              color: '#333',
+              fontSize: '14px'
+            }}>
+              Contact Number <span style={{ color: '#e74c3c' }}>*</span>
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              required
+              placeholder="+91 9876543210"
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                border: '2px solid #e0e0e0',
+                borderRadius: '10px',
+                fontSize: '15px',
+                transition: 'border-color 0.3s',
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#667eea'}
+              onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
+            />
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '16px',
+              background: loading 
+                ? '#ccc' 
+                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '10px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              boxShadow: loading ? 'none' : '0 4px 15px rgba(102, 126, 234, 0.4)'
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.5)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+            }}
+          >
+            {loading ? (
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                <span style={{
+                  width: '20px',
+                  height: '20px',
+                  border: '3px solid rgba(255,255,255,0.3)',
+                  borderTop: '3px solid white',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }}></span>
+                Saving...
+              </span>
+            ) : (
+              'Complete Profile'
+            )}
+          </button>
+        </form>
+
+        {/* Footer */}
+        <p style={{
+          textAlign: 'center',
+          marginTop: '20px',
+          color: '#999',
+          fontSize: '13px'
+        }}>
+          All fields are required to continue
+        </p>
       </div>
+
+      {/* CSS Animation */}
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };
